@@ -1,0 +1,10 @@
+{
+  "errors": "StardewHack {{version}} aşağıdaki hataları tespit etti:",
+  "footer": "Daha fazla talimat için konsolunuzu veya hata kaydınızı (error log) kontrol edin.",
+  "fatal": "Bu hatalar düzeltilene kadar Stardew Valley başlatılamaz.",
+  "outdated-harmony": "SMAPI, Harmony'nin güncel olmayan bir sürümünü kullanıyor.",
+  "initialization-error": "Mod başlatılamadı",
+  "failed-patch": "Yamaların bazıları veya tamamı uygulanamadı.",
+  "outdated-version": "StardewHack bu sürümü desteklemiyor.",
+  "corrupted": "Mod kurulum dosyaları bozulmuş."
+}

@@ -1,0 +1,22 @@
+{
+  "GMCM.ModEnabled.Name": "Mod Etkin",
+  "GMCM.ShowQuestMarkers.Name": "Görev İşaretleyicileri",
+  "GMCM.ShowQuestDetails.Name": "Görev Detayları",
+  "GMCM.RebuildSocializeQuest.Name": "Sosyalleşme Görevini Yeniden Oluştur",
+  "left-to-greet": "Kalan: {0}",
+  "fish-everywhere": "{0} her yerde bulunabilir.",
+  "fish-location": "{0}, {1} konumunda bulunabilir.",
+  "fish-sunny": "{0} yalnızca hava güneşliyken yakalanabilir.",
+  "fish-rainy": "{0} yalnızca hava yağmurluyken yakalanabilir.",
+  "fish-hours": "{0} yalnızca {1} ile {2} saatleri arasında yakalanabilir.",
+  "x-crafting-recipe-known": "{0}, üretim menüsünde üretilebilir.",
+  "x-crafting-recipe-unknown": "{0}, tarifini öğrendiğinizde üretim menüsünde üretilebilir.",
+  "x-y-skill-crafting": "{1} yeteneğinde {0}. seviyeye ulaştığınızda tarifi öğreneceksiniz.",
+  "x-y-friendship-crafting": "{1} ile {0} arkadaşlık seviyesine ulaştığınızda tarifi öğreneceksiniz.",
+  "special-crafting": "{0} tarifini öğrenmek için özel gereksinimler vardır.",
+  "x-cooking-recipe-known": "{0}, bir yemek pişirme istasyonunda yapılabilir.",
+  "x-cooking-recipe-unknown": "{0}, tarifini öğrendiğinizde bir yemek pişirme istasyonunda yapılabilir.",
+  "x-y-skill": "{1} yeteneğinde {0}. seviyeye ulaştığınızda tarifi öğreneceksiniz.",
+  "x-y-friendship": "{1} ile {0}. arkadaşlık seviyesine ulaştığınızda tarifi öğreneceksiniz.",
+  "x-special-recipe": "{0} tarifini öğrenmek için özel gereksinimler vardır."
+}

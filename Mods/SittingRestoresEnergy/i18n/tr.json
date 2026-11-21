@@ -1,0 +1,15 @@
+{
+  "DylanJames.Stamina.Config.Section.Gameplay": "Oynanış Ayarları",
+  "DylanJames.Stamina.Config.EnergyPerSecond.Name": "Enerji Yenilenmesi",
+  "DylanJames.Stamina.Config.EnergyPerSecond.Tooltip": "Otururken her aralıkta ne kadar enerji yenileneceği.",
+  "DylanJames.Stamina.Config.TickRateSeconds.Name": "Yenilenme Hızı (Saniye)",
+  "DylanJames.Stamina.Config.TickRateSeconds.Tooltip": "Otururken her enerji yenilenmesi arasındaki saniye süresi.",
+  "DylanJames.Stamina.Config.MaxEnergyRecovery.Name": "Maksimum Enerji Yenilenmesi (Yüzde)",
+  "DylanJames.Stamina.Config.MaxEnergyRecovery.Tooltip": "Oturarak yenilenebilecek toplam enerjinizin maksimum yüzdesi.",
+  "DylanJames.Stamina.Config.Section.Location": "Konum Ayarları",
+  "DylanJames.Stamina.Config.EnableIndoors.Name": "İç Mekanda Etkinleştir",
+  "DylanJames.Stamina.Config.EnableIndoors.Tooltip": "İç mekanda otururken enerjinin yenilenip yenilenmeyeceği.",
+  "DylanJames.Stamina.Config.EnableOutdoors.Name": "Dış Mekanda Etkinleştir",
+  "DylanJames.Stamina.Config.EnableOutdoors.Tooltip": "Dış mekanda otururken enerjinin yenilenip yenilenmeyeceği.",
+  "DylanJames.Stamina.Config.Note.Text": "Bu sayfa meraklıları içindir. Bu ayarları yalnızca ne anlama geldiklerini biliyorsanız ve modu kendinize göre dengelemek istiyorsanız düzenleyin. Bir hata yaparsanız, ekranın altındaki 'Varsayılan' (Default) yazan metne tıklayın."
+}

@@ -1,0 +1,19 @@
+{
+  "config.custom-skill-page.name": "Özel Beceri Sayfası",
+  "config.custom-skill-page.tooltip": "Özel beceri sayfasının gösterilip gösterilmeyeceği.\nBu, daha fazla beceri için yer olması için cüzdanın yerini değiştirecektir.",
+  "config.support-all-professions-mod.name": "Tüm Meslekler Modunu Destekle",
+  "config.support-all-professions-mod.tooltip": "Tüm Meslekler yüklendiğinde, SpaceCore aracılığıyla kaydedilen özel mesleklerin seviyelerine ulaşıldığında otomatik olarak uygulanıp uygulanmayacağı.",
+  "config.advanced-social-interactions": "Gelişmiş Sosyal Etkileşimler",
+  "config.always-trigger.name": "Her Zaman Tetikle",
+  "config.always-trigger.description": "Bir NPC ile etkileşime geçildiğinde menünün her zaman tetiklenip tetiklenmeyeceği.",
+  "config.trigger-modifier.name": "Tetikleme Değiştirici Tuşu",
+  "config.trigger-modifier.description": "Gelişmiş etkileşim menüsünü tetiklemek için biriyle etkileşime geçerken basılı tutulacak kısayol tuşu.",
+  "interaction-with": "{{npc}} ile Etkileşim",
+  "interaction.chat": "Sohbet Et",
+  "interaction.gift-held": "Eldeki Eşyayı Hediye Et",
+  "interaction.cancel": "İptal",
+  "question.ask": "Bir Soru Sor",
+  "health-regen": "Saniye başına sağlık",
+  "stamina-regen": "Saniye başına enerji",
+  "resource-clump.bad-tool-tier": "Aletin bunu kırmak için yeterince güçlü değil."
+}

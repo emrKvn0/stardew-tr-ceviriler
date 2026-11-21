@@ -1,0 +1,10 @@
+{
+  "host-only": "Sadece kurucu Downhill arazisini sıfırlayabilir.",
+  "confirm-question": "Downhill'deki arazi sıfırlansın mı? Bu işlem geri alınamaz.",
+  "confirm-yes": "Sıfırla",
+  "confirm-no": "İptal",
+  "reset-done": "Downhill arazisi başarıyla sıfırlandı!",
+  "reset-error": "Sıfırlama iptal edildi veya başarısız oldu. SMAPI günlüğünü kontrol edin.",
+  "gmcm-key-name": "Downhill Sıfırlama Tuşu",
+  "gmcm-key-tooltip": "Downhill'i sıfırlamak için onay menüsünü açar."
+}

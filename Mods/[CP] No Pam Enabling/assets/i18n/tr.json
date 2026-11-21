@@ -1,0 +1,80 @@
+{
+  "Changes": [
+    {
+      "LogName": "Change Pam Is Thirsty quest details (Pam)",
+      "Action": "EditData",
+      "Target": "Data/Quests",
+      "Fields": {
+        "103": {
+          "2": "Pam sadece bira ve soluk bira yerine daha çok sebze suyu içmeye çalışıyor. Herhangi bir sebzeyi fıçıya koyarak kendi sebze suyunu yapabilirsin.",
+          "3": "Pam'e herhangi bir meyve/sebze suyu götür.",
+          "9": "Ver bakayım şunu. *höpürdetir*... Ahh, işte bu ilaç gibi geldi.#$b#Gerçekten çok güzel ve serin... Çok ferahlatıcı, hafif tatlı ve hoş bir tadı var.#$b#Teşekkürler ufaklık. Bu benim için çok şey ifade ediyor. Bu meret bayağı iyiymiş meğer!$h"
+        }
+      },
+      "When": {
+        "QuestLetterFrom": "Pam"
+      }
+    },
+    {
+      "LogName": "Change Pam Is Thirsty quest details (Penny)",
+      "Action": "EditData",
+      "Target": "Data/Quests",
+      "Fields": {
+        "103": {
+          "2": "Penny, Pam'in daha sık sebze suyu içmesini sağlamaya çalışıyor. Herhangi bir sebzeyi fıçıya koyarak kendi sebze suyunu yapabilirsin.",
+          "3": "Pam'e herhangi bir meyve/sebze suyu götür.",
+          "9": "Ver bakayım şunu. *höpürdetir*... Ahh, bu şaşırtıcı derecede iyiymiş.#$b#Gerçekten çok güzel ve serin... Çok ferahlatıcı, hafif tatlı ve hoş bir tadı var.#$b#Teşekkürler ufaklık. Bu benim için çok şey ifade ediyor. Penny'ye de teşekkür etmem gerekecek.$h"
+        }
+      },
+      "When": {
+        "QuestLetterFrom": "Penny"
+      }
+    },
+    {
+      "LogName": "Change Pam Is Thirsty quest mail (Pam)",
+      "Action": "EditData",
+      "Target": "Data/mail",
+      "Entries": {
+        "summer_14_1": "Selam Ufaklık,^^Boğazım çöldeki bir kemik kadar kurudu. Canım fena halde bir soluk bira çekiyor ama Penny bunun yerine daha çok sebze suyu içmem için beni ikna etmeye çalışıyor. Sende hiç var mı?^^Bir süredir yabani havuç suyu denemek istiyordum ama herhangi bir sebze suyu da olur.^^   -Pam%item quest 103 %%[#]Pam'in İsteği"
+      },
+      "When": {
+        "QuestLetterFrom": "Pam",
+        "ReplaceOriginalMail": "true"
+      }
+    },
+    {
+      "LogName": "Change Pam Is Thirsty quest mail (Penny)",
+      "Action": "EditData",
+      "Target": "Data/mail",
+      "Entries": {
+        "summer_14_1": "Merhaba @,^Annemi daha sık meyve veya sebze suyu içmeye alıştırmaya çalışıyorum ama evde hiç kalmamış. Ona biraz içecek götürebilir misin?^   -Penny^^Not: Yabani havuç muhtemelen en sevdiğidir ama herhangi bir sebze suyu da olur.%item quest 103 %%[#]Penny'nin İsteği"
+      },
+      "When": {
+        "QuestLetterFrom": "Penny",
+        "ReplaceOriginalMail": "true"
+      }
+    },
+    {
+      "LogName": "Add new Pam Is Thirsty quest mail #2 (Pam)",
+      "Action": "EditData",
+      "Target": "Data/mail",
+      "Entries": {
+        "6721DontEnablePam_NewMail": "Selam Ufaklık,^^Daha önce senden soluk bira istediğimi biliyorum ama bugünlerde Penny beni daha çok sebze suyu içmeye alıştırmaya çalışıyor. Sende hiç var mı?^^Bir süredir yabani havuç suyu denemek istiyordum ama herhangi bir sebze suyu da olur.^^   -Pam%item quest 103 %%[#]Pam'in Yeni İsteği"
+      },
+      "When": {
+        "QuestLetterFrom": "Pam"
+      }
+    },
+    {
+      "LogName": "Add new Pam Is Thirsty quest mail #2 (Penny)",
+      "Action": "EditData",
+      "Target": "Data/mail",
+      "Entries": {
+        "6721DontEnablePam_NewMail": "Merhaba @,^Annemin canı soluk bira çekiyor ama bunun yerine onu daha çok sebze suyu içmeye teşvik etmeye çalışıyorum. Yine de evde hiç sebze suyu kalmamış. Ona biraz götürebilir misin?^   -Penny^^Not: Sanırım en çok yabani havuç suyunu sevecektir ama herhangi bir sebze suyu da olur.%item quest 103 %%[#]Penny'nin İsteği"
+      },
+      "When": {
+        "QuestLetterFrom": "Penny"
+      }
+    }
+  ]
+}

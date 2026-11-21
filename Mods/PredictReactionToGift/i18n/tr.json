@@ -1,0 +1,16 @@
+{
+  "GCMC.BasicSettings": "Temel Ayarlar",
+  "GCMC.Enable": "Etkinleştir",
+  "GCMC.Enable.Desc": "Hediyeye Tepki Tahminini (Predict Reaction To Gift) etkinleştir.",
+  "GCMC.Distance": "Mesafe",
+  "GCMC.Distance.Desc": "Tepkinin gösterileceği mesafe.",
+  "GCMC.WaitingTime": "Bekleme Süresi (saniye)",
+  "GCMC.WaitingTime.Desc": "Bir tepkiyi tetiklerken NPC'nin bekleme süresi",
+  "GCMC.RequireGiftLog": "Hediye Kaydı Gerektirir",
+  "GCMC.RequireGiftLog.Desc": "Hediye kaydı olmadan hediye tepkisi gösterilmeyecektir.",
+  "GCMC.UnknownBubble": "Bilinmeyeni Göster",
+  "GCMC.UnknownBubble.Desc": "Hediye kaydı gerekiyorsa, daha önce verilmemiş hediyeler bir soru işareti gösterecektir.",
+  "GCMC.Compatibility": "Uyumluluk",
+  "GCMC.GiftWeekLimit": "Haftalık Hediye Sınırı",
+  "GCMC.GiftWeekLimit.Desc": "Bu parametre oyun içi NPC'ler için haftalık hediye sınırını etkilemeyecektir.\nHaftalık hediye sınırını değiştiren başka modlar kullanıyorsanız, Hediyeye Tepki Tahmini görünümü beklendiği gibi çalışmayabilir. Bu durumda lütfen değiştirilen gerçek değeri buradan manuel olarak ayarlayın."
+}

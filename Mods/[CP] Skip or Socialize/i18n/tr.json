@@ -1,0 +1,7 @@
+{
+  "config.section.CompatibilitySettings.name": "Uyumluluk Ayarları",
+  "config.Recolor.name": "Yeniden Renklendirme",
+  "config.Recolor.description": "Yüklü arayüz modunuzla eşleşecek bir kullanıcı arayüzü renk teması seçin.",
+  "config.CustomInterface.name": "Özel Arayüz",
+  "config.CustomInterface.description": "Seçeneğinizi listede görmüyorsanız bunu seçin."
+}

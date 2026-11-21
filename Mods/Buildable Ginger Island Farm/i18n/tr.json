@@ -1,0 +1,9 @@
+{
+  "Menu.GingerIslandFarm.DisplayName": "Zencefil Adası Çiftliği",
+  "GMCM.AllowGrassSpread.Title": "Çimenlerin yayılmasına izin ver",
+  "GMCM.AllowGrassSpread.Tooltip": "Zencefil Adası çiftliğinde çimenlerin yayılmasına izin verilip verilmeyeceğini belirler.",
+  "GMCM.AllowSlimeSpawn.Title": "Balçıkların oluşmasına izin ver",
+  "GMCM.AllowSlimeSpawn.Tooltip": "Balçık alanında kaplan balçıklarının oluşmasına izin verilip verilmeyeceğini belirler. Bu seçenek devre dışı bırakılsa bile, onları yenerek kazanılan altın ceviz elde edilene kadar kaplan balçıkları oluşmaya devam edecektir.",
+  "GMCM.AllowBuildingInSlimeArea.Title": "Balçık alanında inşaata izin ver",
+  "GMCM.AllowBuildingInSlimeArea.Tooltip": "Balçık alanında bina inşasına izin verilip verilmeyeceğini belirler."
+}

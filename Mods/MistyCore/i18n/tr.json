@@ -1,0 +1,13 @@
+{
+  "Points": "Puan: {0}",
+  "config.CustomHoeDirt.name": "Özel çapalanmış toprağı etkinleştir",
+  "config.CustomHoeDirt.description": "Çapalanmış toprağa özel bir doku uygular.",
+  "config.CustomBackgrounds.name": "Özel arka planları etkinleştir",
+  "config.CustomBackgrounds.description": "Tıpkı adanın kuzeyinin arka planı gibi harita arka planlarını özelleştirmeye olanak tanır.",
+  "config.CritterSpawning.name": "Canlı oluşumunu etkinleştir",
+  "config.CritterSpawning.description": "Haritalarda küçük canlıların oluşmasını etkinleştirir.",
+  "config.FishingOverrides.name": "Balıkçılık geçersiz kılmaları",
+  "config.FishingOverrides.description": "Özel balıkçılık geçersiz kılmalarını etkinleştirir.",
+  "config.TreeChopEvents.name": "Ağaç kesme olayları",
+  "config.TreeChopEvents.description": "Ağaç kesildiğinde özel eylemleri etkinleştirir."
+}

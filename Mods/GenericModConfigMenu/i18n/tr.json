@@ -1,0 +1,20 @@
+{
+  "button.mod-options": "Mod Seçenekleri",
+  "list.editable-heading": "Modları Yapılandır",
+  "list.not-editable-heading": "Başlık ekranından düzenlenebilir:",
+  "list.keybindings": "Tuş Bağlamaları",
+  "config.buttons.cancel": "İptal",
+  "config.buttons.reset-to-default": "Varsayılan",
+  "config.buttons.save": "Kaydet",
+  "config.buttons.save-and-close": "Kaydet ve Kapat",
+  "config.rebind-key.title": "Yeniden bağlama anahtarı: {{optionName}}",
+  "config.rebind-key.simple-instructions": "Yeniden bağlamak için bir tuşa basın",
+  "config.rebind-key.combo-instructions": "Yeniden bağlamak için bir tuş kombinasyonuna basın",
+  "config.rebind-key.no-key": "(Yok)",
+  "options.open-menu-key.name": "Menü açma tuşu",
+  "options.open-menu-key.desc": "Menüyü açan bir tuş bağı.",
+  "options.scroll-speed.name": "Kaydırma hızı",
+  "options.scroll-speed.desc": "Yapılandırma menüsü kaydırılırken kaydırılacak alan satırı sayısı.",
+  "list.keybinds": "Kısayol Tuşları",
+  "config.rebind-key.keybind-list": "Kısayol Tuşları:"
+}

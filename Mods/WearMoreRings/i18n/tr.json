@@ -1,0 +1,8 @@
+{
+  "DestroyRingChestsCommand": "Oyuncuların yüzüklerini saklamak için kullanılan kalan yüzük sandıklarını kaldırır. İçindeki tüm eşyalar ayağınızın dibine düşecektir.",
+  "OpenForgeCommand": "Demirci menüsünü açar.",
+  "RingsName": "Yüzükler",
+  "RingsTooltip": "Kaç adet yüzük yuvasının kullanılabilir olacağı.",
+  "BonusTrinketName": "Bonus Tılsım",
+  "BonusTrinketTooltip": "Bir yerine iki tılsım yuvasına sahip olunup olunmayacağı."
+}

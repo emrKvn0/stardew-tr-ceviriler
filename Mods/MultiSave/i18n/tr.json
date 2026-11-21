@@ -1,0 +1,12 @@
+{
+  "x-saves": "{0} Kayıt",
+  "1-save": "1 Kayıt",
+  "saving": "Kaydediliyor...",
+  "config-mod-enabled": "MultiSave'i Etkinleştir",
+  "config-save-daily": "Her günün sonunda kaydet",
+  "config-save-on-day-of-the-week": "Haftanın şu gününde kaydet",
+  "save-on-day-of-month": "Ayın şu gününde kaydet",
+  "config-0-equals-disabled": "0 devre dışı demektir",
+  "config-save-button": "Kaydetme Düğmesi",
+  "config-max-days-old": "Kayıt dosyalarını saklama süresi (maksimum gün)"
+}

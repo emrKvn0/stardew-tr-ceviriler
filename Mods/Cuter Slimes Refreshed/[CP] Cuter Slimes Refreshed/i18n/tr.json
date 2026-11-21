@@ -1,0 +1,6 @@
+{
+  "config.Mode.name": "Balçık Şeffaflığı",
+  "config.Mode.description": "Balçıklarınızın nasıl görünmesini istediğinizi seçin. Jöle yarı şeffaftır; Parlak tamamen opaktır.",
+  "config.Mode.values.jelly": "Jöle",
+  "config.Mode.values.glossy": "Parlak"
+}
