@@ -1,0 +1,11 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Willy",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Selam @, doğum günün kutlu olsun. Sana bakınca kendi gençliğim aklıma geliyor. Gençliğinin tadını çıkar, evlat. $h"
+      }
+    }
+  ]
+}

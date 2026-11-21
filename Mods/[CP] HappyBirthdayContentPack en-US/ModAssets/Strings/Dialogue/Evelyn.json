@@ -1,0 +1,11 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Evelyn",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Doğum günün kutlu olsun, @. Çok iyi bir insan olarak yetişmişsin, eminim deden de seninle gurur duyardı."
+      }
+    }
+  ]
+}

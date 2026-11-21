@@ -1,0 +1,21 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Alex",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Selam @, doğum günün kutlu olsun! Bu yılı şimdiye kadarki en iyi yıl yapmaya! $h"
+      }
+    },
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Alex",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Selam, {{Omegasis.HappyBirthday/AffectionateSpouseWord}}. Seninle evlendiğim için çok mutluyum. Her günü bir maç kazanmışım gibi hissettiriyorsun. Doğum günün kutlu olsun! $l"
+      },
+      "When": {
+        "Spouse": "Alex"
+      }
+    }
+  ]
+}

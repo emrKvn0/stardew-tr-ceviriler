@@ -1,0 +1,11 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Caroline",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Doğum günün kutlu olsun, @. Topluluğumuz için yaptığın her şey için teşekkürler. Eminim ailen seninle gurur duyuyordur. $h"
+      }
+    }
+  ]
+}

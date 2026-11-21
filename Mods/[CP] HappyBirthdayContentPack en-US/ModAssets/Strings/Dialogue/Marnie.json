@@ -1,0 +1,11 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Marnie",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Selam, @! Bugün herkes senin doğum gününden bahsediyor, ben de kutlamadan geçmek istemedim. Doğum günün kutlu olsun! $h"
+      }
+    }
+  ]
+}

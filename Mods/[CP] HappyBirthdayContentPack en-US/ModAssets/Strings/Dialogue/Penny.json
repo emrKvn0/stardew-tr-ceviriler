@@ -1,0 +1,21 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Penny",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Doğum günün kutlu olsun, @. Bu yıl hayatın tüm güzellikleri seninle olsun. $h"
+      }
+    },
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Penny",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Doğum günün kutlu olsun, {{Omegasis.HappyBirthday/AffectionateSpouseWord}}. Kitaplarda hep mutlu sonlar okurdum ama seninle olmak bu mutluluğun gelecekte de sürüp gittiğini fark etmemi sağlıyor. Nice yıllara. $l"
+      },
+      "When": {
+        "Spouse": "Penny"
+      }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Clint",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Doğum günün kutlu olsun, @. Topluluğumuz için yaptığın her şey için teşekkürler. Eminim ailen seninle gurur duyuyordur. $h"
+      }
+    },
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Clint",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Biliyorsun, benim için işlenmemiş bir elmas gibisin. Sadece ben ve demir ocağımla geçen sıcak, terli yıllardan başka bir şeyim olmayacağını sanırdım ama kalbimi jeot içindeki bir mücevher gibi gördüğün için çok mutluyum. Doğum günün kutlu olsun, {{Omegasis.HappyBirthday/AffectionateSpouseWord}}. $l"
+      },
+      "When": {
+        "Spouse": "Clint"
+      }
+    }
+  ]
+}

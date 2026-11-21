@@ -1,0 +1,11 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Leo",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Kuş ailem bugün senin doğum günün olduğunu söyledi, @. Doğum günün kutlu olsun!"
+      }
+    }
+  ]
+}

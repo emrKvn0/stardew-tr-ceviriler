@@ -1,0 +1,11 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Robin",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Selam @, doğum günün kutlu olsun! Vadiye taşınmaya karar vermiş olmana gerçekten çok sevindim."
+      }
+    }
+  ]
+}

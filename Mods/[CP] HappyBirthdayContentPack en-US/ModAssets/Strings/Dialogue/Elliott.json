@@ -1,0 +1,22 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Elliott",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Ne harika bir gün, değil mi @? Gerçi senin doğum günün olduğu için sana daha da güzel geliyordur eminim!$h#$b#Aslında bu özel gün için bir şiir yazmanın tam ortasındaydım ama şimdilik 'doğum günün kutlu olsun' demekle yetinmem gerekecek."
+      }
+    },
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Elliott",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Güzel bir {{Omegasis.HappyBirthday/TimeOfDay}}, {{Omegasis.HappyBirthday/AffectionateSpouseWord}}. Tam da eserlerime nasıl ilham perisi olduğunu düşünüyordum. Seninle geçirdiğim her gün bana ilham veriyorsun. Doğum günün kutlu olsun! $l"
+      },
+      "When": {
+        "Spouse": "Elliott"
+      },
+      "Update": "OnTimeChange"
+    }
+  ]
+}

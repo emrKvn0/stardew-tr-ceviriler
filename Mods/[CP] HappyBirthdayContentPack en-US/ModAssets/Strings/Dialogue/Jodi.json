@@ -1,0 +1,11 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Jodi",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Merhaba @. Söylentilere göre bugün doğum gününmüş. Öyleyse doğum günün kutlu olsun! $h"
+      }
+    }
+  ]
+}

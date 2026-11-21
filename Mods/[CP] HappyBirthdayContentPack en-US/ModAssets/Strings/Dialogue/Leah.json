@@ -1,0 +1,22 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Leah",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Selam @, doğum günün kutlu olsun! Çiftlikte işlerin yolunda gitmesine sevindim. $h"
+      }
+    },
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Leah",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Selam, {{Omegasis.HappyBirthday/TimeOfDay}}, {{Omegasis.HappyBirthday/AffectionateSpouseWord}}. Seninle olmak bana büyük ilham verdi. Ben ahşap yontuyor olabilirim ama seninle olmak hayatımı şekillendirdi. Doğum günün kutlu olsun! $l"
+      },
+      "When": {
+        "Spouse": "Leah"
+      },
+      "Update": "OnTimeChange"
+    }
+  ]
+}

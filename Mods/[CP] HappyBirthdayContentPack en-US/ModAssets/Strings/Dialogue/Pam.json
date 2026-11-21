@@ -1,0 +1,11 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Pam",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Doğum günün kutlu olsun, evlat. Yeni yaşını kutlamak için bir şeyler içmeliyiz! $h"
+      }
+    }
+  ]
+}

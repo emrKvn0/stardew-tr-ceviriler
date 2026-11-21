@@ -1,0 +1,11 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Wizard",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Doğum günün kutlu olsun, @. Geleceğini yalnızca senin şekillendireceğini asla unutma.#$e#Nereden mi bildim? Ah, kasabalıların sana ne hediye alacaklarını konuşurken kulak misafiri oldum. Beğeneceğini düşünüyorum."
+      }
+    }
+  ]
+}

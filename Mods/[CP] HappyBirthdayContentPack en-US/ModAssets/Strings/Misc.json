@@ -1,0 +1,21 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Mods/Omegasis.HappyBirthday/Strings/Misc",
+      "entries": {
+        "BirthdayError_FestivalDay": "Üzgünüm, doğum günün bir festival gününe denk gelemez!",
+        "Date": "Gün",
+        "Default Birthday Wish": "Doğum günün kutlu olsun, @!",
+        "FavoriteGift": "En Sevilen Hediyeler",
+        "Happy Birthday: Farmhand Birthday Message": "Bugün @ karakterinin doğum günü! Doğum günü kutlu olsun!",
+        "Happy Birthday: Star Message": "Bugün senin doğum günün! Doğum günün kutlu olsun!",
+        "Season": "Mevsim",
+        "Selected": "Seçildi",
+        "TimeOfDay_Morning": "Sabah",
+        "TimeOfDay_Afternoon": "Öğleden Sonra",
+        "TimeOfDay_Night": "Akşam"
+      }
+    }
+  ]
+}

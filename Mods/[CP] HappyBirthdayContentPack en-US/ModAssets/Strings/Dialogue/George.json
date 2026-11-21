@@ -1,0 +1,11 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/George",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Benim yaşıma geldiğinde doğum günleri gelip geçmeye başlar. Yine de doğum günün kutlu olsun, @."
+      }
+    }
+  ]
+}

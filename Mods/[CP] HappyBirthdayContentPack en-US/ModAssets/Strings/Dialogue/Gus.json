@@ -1,0 +1,11 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Gus",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Selam @, doğum günün kutlu olsun! Umarım günün geri kalanının tadını çıkarırsın ve salona uğramayı unutmazsın!"
+      }
+    }
+  ]
+}

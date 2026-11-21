@@ -1,0 +1,21 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Sandy",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Ay tatlım, doğum gününde beni görmek için buralara kadar mı geldin?$h#$b#Öyleyse yapabileceğim en azından sana mutlu yıllar dilemek!~ $h"
+      }
+    },
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Sandy",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Yollarımızın kesişmesine o kadar seviniyorum ve çöle beni ziyarete geldiğin tüm o zamanlar için çok minnettarım. Şimdi her günü ve hayatımın geri kalanını seninle geçireceğim için havalara uçuyorum! Doğum günün kutlu olsun, {{Omegasis.HappyBirthday/AffectionateSpouseWord}}. $l"
+      },
+      "When": {
+        "Spouse": "Sandy"
+      }
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Vincent",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Selam @, oyun oyn... aa, senin doğum günün mü? Doğum günün kutlu olsun!"
+      }
+    }
+  ]
+}

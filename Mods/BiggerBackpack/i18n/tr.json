@@ -1,0 +1,8 @@
+{
+  "SetBackpackSizeCommand": "Oyuncunun sırt çantası boyutunu ayarlar. 12'nin katı olmalıdır.",
+  "Purchase": "Satın Al ({{cost}}g)",
+  "BackpackUpgrade": "Sırt Çantası Yükseltmesi -- 48 yuva",
+  "PremiumPack": "Premium Çanta",
+  "BackpackCostName": "Sırt çantası fiyatı",
+  "BackpackCostTooltip": "Bu sırt çantasını dükkandan satın almak için ödemeniz gereken miktar."
+}

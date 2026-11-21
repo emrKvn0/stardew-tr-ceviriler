@@ -1,0 +1,11 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Kent",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Jodi bugün doğum günün olduğunu söyledi, @. Doğum günün kutlu olsun; her bir günün kıymetini bilmeyi unutma."
+      }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Maru",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Doğum günün kutlu olsun, @. Sana hiç sönmeyen bir mum yapmaya çalıştım ama ne yazık ki olmadı. Belki seneye, ne dersin? $h"
+      }
+    },
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Maru",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Doğum günün kutlu olsun, {{Omegasis.HappyBirthday/AffectionateSpouseWord}}. Kayan yıldız bulmak için hep uzaya bakmam gerektiğini sanırdım ama sana baktığımda zaten bir tanesine sahip olduğumu fark ediyorum. $l"
+      },
+      "When": {
+        "Spouse": "Maru"
+      }
+    }
+  ]
+}

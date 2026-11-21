@@ -1,0 +1,21 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Abigail",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Doğum günün kutlu olsun, @! Umarım bu yıl birlikte çok daha fazla maceraya atılırız! $h"
+      }
+    },
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Abigail",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Selam, {{Omegasis.HappyBirthday/AffectionateSpouseWord}}. Seninle her gün harika bir macera gibi hissettiriyor! Doğum günün kutlu olsun! $l"
+      },
+      "When": {
+        "Spouse": "Abigail"
+      }
+    }
+  ]
+}

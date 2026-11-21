@@ -1,0 +1,22 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Sam",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Selam @, doğum günün kutlu olsun! Bir ara doğum günün şerefine müzik yapalım! $h"
+      }
+    },
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Sam",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Güzel bir {{Omegasis.HappyBirthday/TimeOfDay}}, {{Omegasis.HappyBirthday/AffectionateSpouseWord}}. Seninle tanışmadan önce hiç yuva kuracağımı düşünmezdim ama şimdi arkama bakmak bile istemiyorum. Doğum günün kutlu olsun! $l"
+      },
+      "When": {
+        "Spouse": "Sam"
+      },
+      "Update": "OnTimeChange"
+    }
+  ]
+}

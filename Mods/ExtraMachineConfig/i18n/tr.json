@@ -1,0 +1,11 @@
+{
+  "HolderName": "ExtraMachineConfig Yer Tutucu Eşya",
+  "HolderDescription": "Bu eşya, makinelerin şapka, silah ve diğer eşya türlerini üretememe sınırlamasını aşmak için kullanılan geçici bir yer tutucudur. Bunu görüyorsanız ya Lookup Anything / CJB Item Spawner ile bakıyorsunuzdur ya da EMC veya onu kullanan bir modda sorun oluşmuştur.",
+  "AttackMultiplierBuff": "{0} Saldırı Çarpanı",
+  "ImmunityBuff": "{0} Bağışıklık",
+  "KnockbackMultiplierBuff": "{0} Geri İtme Çarpanı",
+  "WeaponSpeedMultiplierBuff": "{0} Silah Hızı Çarpanı",
+  "CriticalChanceMultiplierBuff": "{0} Kritik Şans Çarpanı",
+  "CriticalPowerMultiplierBuff": "{0} Kritik Güç Çarpanı",
+  "WeaponPrecisionMultiplierBuff": "{0} Silah İsabet Çarpanı"
+}

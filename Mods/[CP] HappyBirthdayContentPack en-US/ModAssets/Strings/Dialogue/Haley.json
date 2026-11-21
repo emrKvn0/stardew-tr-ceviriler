@@ -1,0 +1,21 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Haley",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Doğum günün kutlu olsun, @. Umarım bu yıl güzel hediyeler alırsın! $h"
+      }
+    },
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Haley",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Biliyorsun, {{Omegasis.HappyBirthday/AffectionateSpouseWord}}, ilk tanıştığımızdan beri çok yol katettik ama bu yolculuğa birlikte çıktığımız için mutluyum. Seninle her gün fotoğraf gibi kusursuz. Doğum günün kutlu olsun! $l"
+      },
+      "When": {
+        "Spouse": "Haley"
+      }
+    }
+  ]
+}

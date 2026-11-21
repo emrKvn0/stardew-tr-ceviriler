@@ -1,0 +1,11 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Demetrius",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Doğum günün kutlu olsun, @! Bugün biraz dinlenip keyfine bakmayı ihmal etme. $h"
+      }
+    }
+  ]
+}

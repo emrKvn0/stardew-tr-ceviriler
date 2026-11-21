@@ -1,0 +1,22 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Harvey",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Doğum günün kutlu olsun, @. Arada bir kontrole gel, tamam mı? Nice yıllarını görmek istiyorum."
+      }
+    },
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Harvey",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Güzel bir {{Omegasis.HappyBirthday/TimeOfDay}}, {{Omegasis.HappyBirthday/AffectionateSpouseWord}}. Seninle evlendiğimden beri kendimi ne kadar zinde hissettiğimi düşünüyordum. Sana baktığımda içim neşeyle doluyor. Doğum günün kutlu olsun! $l"
+      },
+      "When": {
+        "Spouse": "Harvey"
+      },
+      "Update": "OnTimeChange"
+    }
+  ]
+}

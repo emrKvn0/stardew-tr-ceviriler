@@ -1,0 +1,21 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Shane",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Doğum günün kutlu olsun, @. Sıkı çalışmaya devam et, eminim önümüzdeki yıl senin için harika geçecek."
+      }
+    },
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Shane",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Doğum günlerinde içki içmek dışında bir şeyden keyif alacağımı hiç sanmazdım ama bana harika bir hayat yaşamayı gösterdin. Doğum günün kutlu olsun, {{Omegasis.HappyBirthday/AffectionateSpouseWord}}. $l"
+      },
+      "When": {
+        "Spouse": "Shane"
+      }
+    }
+  ]
+}

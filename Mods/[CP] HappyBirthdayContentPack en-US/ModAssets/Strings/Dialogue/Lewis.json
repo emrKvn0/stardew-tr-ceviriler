@@ -1,0 +1,11 @@
+{
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Lewis",
+      "entries": {
+        "Omegasis.HappyBirthday.BirthdayGreeting": "Doğum günün kutlu olsun, @! Kasaba için yaptığın her şeyi gerçekten takdir ediyorum. Böyle devam et."
+      }
+    }
+  ]
+}
