@@ -1,0 +1,16 @@
+{
+  "Name": "Canli Sular (Living Waters)",
+  "Author": "Local",
+  "Version": "1.1.0",
+  "Description": "Nehirlere ve göllere balık salın, balık popülasyonlarının üremesini ve göçünü izleyin; Halkevi ve görev balıklarınız korunur.",
+  "UniqueID": "Local.LivingWaters",
+  "EntryDll": "LivingWaters.dll",
+  "MinimumApiVersion": "4.0.0",
+  "Dependencies": [
+    {
+      "UniqueID": "shekurika.WaterFish",
+      "IsRequired": false
+    }
+  ],
+  "UpdateKeys": []
+}

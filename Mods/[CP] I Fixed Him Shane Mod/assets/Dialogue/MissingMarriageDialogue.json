@@ -1,0 +1,44 @@
+{
+  "Changes": [
+    {
+      "LogName": "Missing SV Fair",
+      "Action": "EditData",
+      "Target": "Data/Festivals/fall16",
+      "Entries": {
+        "Shane_spouse": "Çiftlik sergisini kurmayı bitirdiğinde, bize sandviç alır mısın?"
+      }
+    },
+    {
+      "LogName": "Missing Spirits Eve",
+      "Action": "EditData",
+      "Target": "Data/Festivals/fall27",
+      "Entries": {
+        "Shane_spouse": "Bitmeden bana biraz kızılcık sodası alır mısın? Jas ile çok meşgulüm..."
+      }
+    },
+    {
+      "LogName": "Missing Egg Festival",
+      "Action": "EditData",
+      "Target": "Data/Festivals/spring13",
+      "Entries": {
+        "Shane_spouse": "Aramızda kalsın, mezarlıkta üç tane var.$6"
+      }
+    },
+    {
+      "LogName": "Missing Luau",
+      "Action": "EditData",
+      "Target": "Data/Festivals/summer11",
+      "Entries": {
+        "Shane_spouse": "Çorba için boş bir kap getirmemin sakıncası var mı sence?"
+      }
+    },
+    {
+      "LogName": "Missing Festival of Ice",
+      "Action": "EditData",
+      "Target": "Data/Festivals/winter8",
+      "Entries": {
+        "Shane_spouse": "Sadece seni desteklemek için buradayım. Aksi takdirde, içeride sıcak bir yerde olurdum."
+      }
+    }
+  ]
+}

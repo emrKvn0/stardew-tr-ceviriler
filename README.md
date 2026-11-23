@@ -1,9 +1,34 @@
-# Stardew Valley Mod Türkçe Çevirileri
+# Stardew Valley Mod Türkçe Çevirileri & Özel Modlar
 
-Stardew Valley 1.6 mod paketi için tüm `tr.json` ve özel Türkçe çeviri dosyalarının tam yedeği (**128 dosya**, **91 mod/modül**).
+Stardew Valley 1.6 mod paketi için tüm `tr.json` ve özel Türkçe çeviri dosyalarının tam yedeği (**137 dosya**, **92 mod/modül**), kendi geliştirdiğimiz **4 özel SMAPI modu** ve yamalanan mevcut mod düzeltmeleri.
 
 ## Kurulum (Modlar Güncellendiğinde Geri Yükleme)
-1. PowerShell ile `.\kur.ps1` çalıştırın (veya `Mods` klasörünü oyunun `Stardew Valley\Mods` klasörüne kopyalayıp **"Hedefteki dosyaları değiştir"** deyin).
+1. **Türkçe Çeviriler + Yamalar:** PowerShell ile `.\kur.ps1` çalıştırın (veya `Mods` klasörünü oyunun `Stardew Valley\Mods` klasörüne kopyalayıp **"Hedefteki dosyaları değiştir"** deyin).
+2. **Özel Modlar:** `OzelModlar` klasöründeki tek tek `.zip` dosyalarını (veya hepsini tek seferde kurmak için `OzelModlar/OzelModlar-Tumu.zip`) doğrudan `Stardew Valley\Mods` klasörüne çıkarın.
+
+## Bize Ait Özel Modlar (`OzelModlar/`)
+
+Tüm özel modların derlenmiş ve kuruluma hazır `.zip` paketleri `OzelModlar/` altında, açık C# kaynak kodları ise `OzelModlar/src/` altındadır.
+
+| Mod Adı | Sürüm | UniqueID | Zip Paketi | Açıklama |
+| :--- | :--- | :--- | :--- | :--- |
+| Canlı Sular (Living Waters) | `1.1.0` | `Local.LivingWaters` | `OzelModlar/LivingWaters.zip` | Sulara balık salma, canlı balık popülasyonu/üreme/göç sistemi, HUD & Su Günlüğü ve **Visible Fish** canlı Harmony entegrasyonu (`shekurika.WaterFish` opsiyonel). |
+| Live State Exporter | `1.4.0` | `Local.LiveStateExporter` | `OzelModlar/LiveStateExporter.zip` | Save dosyalarına dokunmadan güncel oyun durumunu (`live_summary.md`, `live_chests.md`, `live_cc.md`, `live_social.md`, `live_fish.md`) dışa aktarır. |
+| Mute On Focus Loss | `1.0.0` | `Antigravity.MuteOnFocusLoss` | `OzelModlar/MuteOnFocusLoss.zip` | Alt-Tab yapıldığında (pencere odak kaybettiğinde) tüm oyun seslerini ve müziği otomatik susturur, geri dönünce eski seviyesine getirir. |
+| Luck Tooltip Enhancer | `1.0.0` | `Local.LuckTooltipEnhancer` | `OzelModlar/LuckTooltipEnhancer.zip` | **UI Info Suite 2 Alternative** (`DazUki.UIInfoSuite2Alt` gerekli) şans ikonuna 0–100% şans yüzdesi, kesin değer ve min/max aralığı ekler. |
+
+- Toplu kurulum paketi: `OzelModlar/OzelModlar-Tumu.zip` (4 özel modun tamamı).
+
+## Değiştirilen / Yamalanan Mevcut Modlar (`DegistirilenModlar/`)
+
+Bu yamalar hem tekil `.zip` olarak `DegistirilenModlar/` altında hem de `kur.ps1` ile otomatik uygulanacak şekilde `Mods/` altında yer alır:
+
+| Mod Adı | Sürüm | Nexus ID | Zip Paketi | Yapılan Değişiklik |
+| :--- | :--- | :--- | :--- | :--- |
+| Ridgeside Village (CP) | `2.5.17` | [7286](https://www.nexusmods.com/stardewvalley/mods/7286) | `DegistirilenModlar/RidgesideVillage-SOStrings-Fix.zip` | `Data/SpecialOrders/SOStrings.json` içindeki dinamik `ShirtNameFromId` blokları ayrılarak özel sipariş metinlerinin save yüklenmeden önce Türkçe yüklenmesi sağlandı. |
+| (CP) I Fixed Him - Shane | `1.4.0` | [21660](https://www.nexusmods.com/stardewvalley/mods/21660) | `DegistirilenModlar/IFixedHimShane-TR-Fix.zip` | Doğrudan JSON içi Türkçe çeviriler + `MarriageDialogue.json` ve `MissingMarriageDialogue.json` içindeki eksik tırnak (JSON sözdizimi) hatalarının düzeltilmesi. |
+
+> **Not (`Visible Fish` hakkında):** `VisibleFish` (`shekurika.WaterFish` v0.4.2) modunun kendi DLL/asset dosyaları orijinal haliyle bırakılmıştır; sudaki balık davranışı üzerindeki tüm değişikliklerimiz **Canlı Sular (`LivingWaters.zip`)** modunun içindeki `VisibleFishBridge.cs` Harmony köprüsü aracılığıyla çalışma zamanında uygulanır.
 
 ## Çevirilerin Uyumlu Olduğu Mod Sürümleri
 
@@ -12,6 +37,7 @@ Stardew Valley 1.6 mod paketi için tüm `tr.json` ve özel Türkçe çeviri dos
 | [CP] Additional Farm Cave | `4.0` | [14109](https://www.nexusmods.com/stardewvalley/mods/14109) | `Tikamin557.CP.AdditionalFarmCave` | `Additional Farm Cave/[CP] Additional Farm Cave/i18n/tr.json` |
 | [CP] Better Junimos Config Wizard | `3.2.0` | - | `ceruleandeep.BetterJunimos.CP` | `[CP] Better Junimos Config Wizard/i18n/tr.json` |
 | [CP] Clint Reforged | `1.2.1` | [18345](https://www.nexusmods.com/stardewvalley/mods/18345) | `SoftPandaBoi.ClintReforged` | `[CP] Clint Reforged/i18n/tr.json` |
+| [CP] I Fixed Him - Shane Dialogue Consistency | `1.4.0` | [21660](https://www.nexusmods.com/stardewvalley/mods/21660) | `joiinks.IFixedHim` | `[CP] I Fixed Him Shane Mod` (8 dosya) |
 | [CP] Skip or Socialize | `0.1.0` | [42940](https://www.nexusmods.com/stardewvalley/mods/42940) | `dylanjames.skiporsocialize.cp` | `[CP] Skip or Socialize/i18n/tr.json` |
 | [MFM] More New Fish | `1.0.0` | - | `MNFLetters` | `[MFM] New Fish/i18n/tr.json` |
 | [NPC] Rodney O'Brien | `3.3.1` | [13437](https://www.nexusmods.com/stardewvalley/mods/13437) | `TheFrenchDodo.RodneyOBrien` | `[CP] Rodney O'Brien/i18n/tr.json` |

@@ -1,0 +1,15 @@
+{
+  "Changes": [
+    {
+      "LogName": "Additional Marriage Dialogue",
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/MarriageDialogue",
+      "Entries": {
+        "Rainy_Day_Shane": "Çatı mı akıyor? O sesin ne olduğunu merak ediyordum.",
+        "Indoor_Day_Shane": "Havada özel bir şey var... *koklama*... bu ne? Oh...#$b#Bu sadece birkaç hafta önce cebime koyduğum eski mısır cipsi.#$e#Bir ısırık almak istemem kötü bir şey mi?",
+        "fall_Shane": "Sanırım mini buzdolabımın arkasında yeni bir mantar türü büyüyor.#$e#%pet veya hayvanlardan biri ona ulaşmadan önce bununla ilgilenmeliyiz.",
+        "winter_Shane": "Dışarıda kocaman bir dünya var...$3#$b#Ama burası daha sıcak.$6"
+      }
+    },
+  ]
+}

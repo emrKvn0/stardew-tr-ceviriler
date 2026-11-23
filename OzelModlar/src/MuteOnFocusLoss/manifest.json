@@ -1,0 +1,9 @@
+{
+  "Name": "Mute On Focus Loss",
+  "Author": "Antigravity",
+  "Version": "1.0.0",
+  "Description": "Automatically mutes all game audio and music when Alt-Tabbed or window loses focus, and restores it when focused.",
+  "UniqueID": "Antigravity.MuteOnFocusLoss",
+  "EntryDll": "MuteOnFocusLoss.dll",
+  "MinimumApiVersion": "4.0.0"
+}

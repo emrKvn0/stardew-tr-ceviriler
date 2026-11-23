@@ -1,0 +1,14 @@
+{
+  "Changes": [
+    {
+      "LogName": "Sober Daily Dialogue",
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Shane",
+      "Entries": {
+        "Resort_Entering": "Huh... dışarısı çok sıcak...",
+        "Resort_Bar": "Bu tropikal aromalı gazlı içecekleri başka hiçbir yerde bulamıyorum!#$e#Çok ferahlatıcı...$h",
+        "Tue8": "Bir ara Tunnelers maçına gitmeliyiz. Tek başıma gittiğimde genellikle çok fazla bira içerdim.",
+      }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "Changes": [
+    {
+      "LogName": "Sober Night Market",
+      "Action": "EditData",
+      "Target": "Strings/schedules/Shane",
+      "Entries": {
+        "winter_15.000": "Jas ve Marnie'ye Kış Yıldızı hediyeleri almaya çalışacaktım ama...#$e#Her şey çok pahalı...$s"
+      }
+    },
+    {
+      "LogName": "Sober Spirits Eve",
+      "Action": "EditData",
+      "Target": "Data/Festivals/fall27",
+      "Entries": {
+        "Shane": "Kızılcık sodası bitmiş...$s"
+      }
+    }
+  ]
+}

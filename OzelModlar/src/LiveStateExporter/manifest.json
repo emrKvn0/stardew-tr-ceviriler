@@ -1,0 +1,10 @@
+{
+  "Name": "Live State Exporter",
+  "Author": "Local",
+  "Version": "1.4.0",
+  "Description": "Read-only exporter that writes current live game state to live_summary.md, live_chests.md, live_cc.md, live_social.md, live_fish.md, and progress_history.jsonl without touching save files.",
+  "UniqueID": "Local.LiveStateExporter",
+  "EntryDll": "LiveStateExporter.dll",
+  "MinimumApiVersion": "4.0.0",
+  "UpdateKeys": []
+}

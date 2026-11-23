@@ -1,0 +1,53 @@
+{
+  "Changes": [
+    {
+      "LogName": "Consitency Engagement Dialogue",
+      "Action": "EditData",
+      "Target": "Data/EngagementDialogue",
+      "Entries": {
+        "Shane1": "@... Başım dönüyor, ama alkolden değil."
+      }
+    },
+
+    {
+      "LogName": "Consitency Marriage Dialogue",
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/MarriageDialogue",
+      "Entries": {
+        "summer_Shane": "Bugün programımda ne var... hmmm... #$e# Sanırım ufukta baharatlı pretzel atıştırmalıkları ve bir kutu dondurma görüyorum.",
+        "spouseRoom_Shane": "#$c .5#Film mi izlesem, video oyunu mu oynasam? Bazen hayat zor olabilir.#$e#Merhaba, @. Bugün burada takılacağım ve... belki biraz yerleri süpürürüm falan."
+      }
+    },
+    
+    {
+      "LogName": "Married Flower Dance Dialogue",
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Shane",
+      "Entries": {
+        "FlowerDance_Accept_Spouse": "Dans mı? Hay aksi. Tamam... Yanlışlıkla ayağına basmayacağıma söz veremem..."
+      }
+    },
+    // replaces pale ale with pizza, beer with ginger ale
+    {
+      "LogName": "Consitency Specific Marriage Dialogue",
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/MarriageDialogueShane",
+      "Entries": {
+        "Rainy_Day_2": "Al... bunu al.[206 174 903 305 215]#$e#Bir süre önce bunlardan biraz satın aldım ve neredeyse son kullanma tarihleri dolmak üzere...",
+        "Indoor_Night_0": "Gecenin sonuna doğru gözlerimi kapatmadan önce biraz daha tatlı yiyeceğim.",
+        "Neutral_6": "Şehirdeki arkadaşlarını görmeye gitmen gerekiyorsa, git. Ben televizyon ve mikrodalgada ısıtılmış birkaç pretzel ile mutluyum..",
+        "spring_1": "Ooo... başım zonkluyor. Dün soda içtiğim için kesinlikle yeterince su içmedim.",
+        "summer_27": "Sonbahar için planların neler? Ben diyetime daha fazla sebze eklemeye çalışacağım.",
+        "fall_1": "Hmm... Mevsimi kutlamak için birkaç kasa köpüklü kabak şarabı almam gerekebilir...$6"
+      }
+    },
+    {
+      "LogName": "Consitency Saloon Marriage Dialogue",
+      "Action": "EditData",
+      "Target": "Strings/schedules/Shane",
+      "Entries": {
+        "marriage_Fri.002": "Arada sırada pahalı bir soda sipariş etmezsem, Gus iflas eder. Ben sadece vatandaşlık görevimi yapıyorum. Saat 10 civarında eve döneceğim."
+      }
+    }
+  ]
+}

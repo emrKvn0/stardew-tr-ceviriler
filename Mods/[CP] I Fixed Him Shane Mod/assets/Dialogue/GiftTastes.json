@@ -1,0 +1,21 @@
+{
+  "Changes": [
+    {
+      "LogName": "Alcohol Acceptance Dialogue",
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Shane",
+      "Entries": {
+        "AcceptGift_alcohol_item": "Neden...#$b#...Bunu lavaboya döküyorum.$a",
+        "AcceptBirthdayGift_alcohol_item": "Dalga geçiyorsun herhalde.#$b#Senin için bunu çöpe atayım.$a"
+      }
+    },
+    {
+      "LogName": "Alcohol Gift Tastes and Joja Cola",
+      "Action": "EditData",
+      "Target": "Data/NPCGiftTastes",
+      "Entries": {
+        "Shane": "Vay canına, @! Bunun benim en sevdiğim şey olduğunu nereden bildin?/206 215 260/Bu harika! Teşekkürler!/-5 -79 303 167/Bunu pek sevmedim./-81 152 330/Neden bana çöpünü veriyorsun?/80 342 alcohol_item/Oh, bana bir şey mi aldın? Teşekkürler!/203/",
+      }
+    }
+  ]
+}

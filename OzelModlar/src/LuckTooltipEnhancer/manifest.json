@@ -1,0 +1,16 @@
+{
+  "Name": "Luck Tooltip Enhancer",
+  "Author": "Local",
+  "Version": "1.0.0",
+  "Description": "Enhances UIInfoSuite2Alt luck tooltip to show 0-100% luck, exact value, status text side by side, and min/max bounds without altering config or saves.",
+  "UniqueID": "Local.LuckTooltipEnhancer",
+  "EntryDll": "LuckTooltipEnhancer.dll",
+  "MinimumApiVersion": "4.0.0",
+  "Dependencies": [
+    {
+      "UniqueID": "DazUki.UIInfoSuite2Alt",
+      "IsRequired": true
+    }
+  ],
+  "UpdateKeys": []
+}
