@@ -23,6 +23,7 @@ public sealed class ModEntry : Mod
     private static VisibleFishBridge? ActiveVisibleFish;
 
     private ModConfig Config = new();
+    private EcosystemLogger AuditLog = null!;
     private EcosystemManager Ecosystem = null!;
     private WaterHudRenderer HudRenderer = null!;
     private VisibleFishBridge VisibleFish = null!;
@@ -33,7 +34,8 @@ public sealed class ModEntry : Mod
     public override void Entry(IModHelper helper)
     {
         this.Config = helper.ReadConfig<ModConfig>();
-        this.Ecosystem = new EcosystemManager(this.Monitor, () => this.Config);
+        this.AuditLog = new EcosystemLogger(this.Monitor, this.ModManifest.Version.ToString());
+        this.Ecosystem = new EcosystemManager(this.Monitor, () => this.Config, this.AuditLog);
         this.HudRenderer = new WaterHudRenderer(this.Ecosystem, () => this.Config, helper.Input);
         this.VisibleFish = new VisibleFishBridge(this.Monitor, this.Ecosystem, () => this.Config);
         this.ReleaseAnimator = new FishReleaseAnimator(this.Monitor, this.VisibleFish);
@@ -259,6 +261,7 @@ public sealed class ModEntry : Mod
     private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
     {
         this.ReleaseAnimator.Clear();
+        this.AuditLog.ResetForSave(Constants.SaveFolderName);
         var saved = this.Helper.Data.ReadSaveData<WaterEcosystemSaveData>(SaveDataKey);
         this.Ecosystem.LoadState(saved);
     }
@@ -274,12 +277,18 @@ public sealed class ModEntry : Mod
     private void OnSaving(object? sender, SavingEventArgs e)
     {
         if (Context.IsMainPlayer)
-            this.Helper.Data.WriteSaveData(SaveDataKey, this.Ecosystem.ExportState());
+        {
+            var state = this.Ecosystem.ExportState();
+            this.Helper.Data.WriteSaveData(SaveDataKey, state);
+            this.Ecosystem.RecordSaveSnapshot();
+        }
     }
 
     private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
     {
         this.ReleaseAnimator.Clear();
+        this.AuditLog.Flush();
+        this.AuditLog.ResetForSave(null);
         this.Ecosystem.LoadState(null);
     }
 

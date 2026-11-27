@@ -402,7 +402,7 @@ internal sealed class WaterJournalMenu : IClickableMenu
 
         string summary = TrimToWidth(
             Game1.smallFont,
-            $"{waterTypeInfo}  |  Tür: {this.CurrentEntries.Count} (Doğal: {this.InspectedProfile.MaxNaturalSpecies})  |  Balık: {totalFish}/{this.InspectedProfile.MaxTotalFish}  |  Doğan: {totalBornHere}  |  Tutulan: {totalCaughtHere}",
+            $"{waterTypeInfo}  |  Tür: {this.CurrentEntries.Count}  |  Balık: {totalFish}/{this.InspectedProfile.MaxTotalFish}  |  Doğan: {totalBornHere}  |  Tutulan: {totalCaughtHere}",
             w - 28);
         Utility.drawTextWithShadow(b, summary, Game1.smallFont, new Vector2(x + 14, headerY + 42), InkMuted);
     }
@@ -432,13 +432,13 @@ internal sealed class WaterJournalMenu : IClickableMenu
         int nextY = DrawBox(
             y,
             "Su Boyutuna Göre Ekoloji ve Göç Ağı",
-            $"Küçük göletler doğal olarak az sayıda tür (1-3) ve sınırlı balık barındırır; büyük göller ve akarsular çok daha zengin ekosistemlere sahiptir.\nYalnızca harita kenarına açılan akarsular göçle bağlıdır (gece %{this.Config.MigrationChancePercent} göç şansı).",
+            $"Küçük göletler doğal olarak daha az balık kapasitesine sahipken büyük göller ve akarsular çok daha kalabalık ekosistemler barındırır; bölgedeki tüm doğal türler suya yerleşebilir.\nYalnızca harita kenarına açılan akarsular göçle bağlıdır (gece %{this.Config.MigrationChancePercent} göç şansı).",
             AccentMigration);
 
         nextY = DrawBox(
             nextY,
             "Bu Suyun Kapasitesi ve Mod Oranları",
-            $"Bu su ({this.InspectedProfile.SizeLabel}): Doğal tür limiti {this.InspectedProfile.MaxNaturalSpecies}  |  Tür kapasitesi: {this.InspectedProfile.MaxPerSpecies}  |  Toplam: {this.InspectedProfile.MaxTotalFish} balık\nÜreme: %{this.Config.BreedingChancePercent} (gece en fazla +3)  |  {this.InspectedProfile.QualityBonusThreshold}+ balıkta %30 şansla +1 yıldız  |  Korumalı tür: {(this.Config.ProtectNeededFish ? "Açık" : "Kapalı")}",
+            $"Bu su ({this.InspectedProfile.SizeLabel}): Tür kapasitesi {this.InspectedProfile.MaxPerSpecies}  |  Toplam kapasite: {this.InspectedProfile.MaxTotalFish} balık\nÜreme: %{this.Config.BreedingChancePercent} (gece en fazla +3)  |  {this.InspectedProfile.QualityBonusThreshold}+ balıkta %30 şansla +1 yıldız  |  Korumalı tür: {(this.Config.ProtectNeededFish ? "Açık" : "Kapalı")}",
             AccentStocked);
 
         var stockedZones = this.DiscoveredZones
@@ -458,12 +458,28 @@ internal sealed class WaterJournalMenu : IClickableMenu
     {
         if (this.CurrentEntries.Count == 0)
         {
+            string emptyMsg = Game1.currentLocation is Farm && this.Config.EmptyFarmStart
+                ? "Bu çiftlik suyunda henüz balık yok (başlangıçta boş)."
+                : "Bu suda henüz kayıtlı bir balık türü yok.";
             Utility.drawTextWithShadow(
                 b,
-                "Bu suda henüz kayıtlı bir balık türü yok.",
+                emptyMsg,
                 Game1.smallFont,
                 new Vector2(this.ListViewport.X + 12, this.ListViewport.Y + 16),
                 InkDark);
+
+            if (Game1.currentLocation is Farm && this.Config.EmptyFarmStart)
+            {
+                string tip = this.InspectedWaterBody is { TouchesMapEdge: true }
+                    ? "Eline balık alıp suya bırakarak üretebilir veya komşu nehirlerden göç bekleyebilirsin."
+                    : "Kapalı çiftlik göleti: Eline bir balık alıp suya tıklayarak canlı popülasyon başlatabilirsin.";
+                Utility.drawTextWithShadow(
+                    b,
+                    Game1.parseText(tip, Game1.smallFont, Math.Max(220, this.ListViewport.Width - 24)),
+                    Game1.smallFont,
+                    new Vector2(this.ListViewport.X + 12, this.ListViewport.Y + 48),
+                    InkMuted);
+            }
             return;
         }
 

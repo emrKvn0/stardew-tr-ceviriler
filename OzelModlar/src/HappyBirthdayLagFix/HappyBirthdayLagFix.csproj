@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>HappyBirthdayLagFix</AssemblyName>
+    <RootNamespace>HappyBirthdayLagFix</RootNamespace>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GamePath>C:\Program Files (x86)\Steam\steamapps\common\Stardew Valley</GamePath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="StardewModdingAPI">
+      <HintPath>$(GamePath)\StardewModdingAPI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="SMAPI.Toolkit.CoreInterfaces">
+      <HintPath>$(GamePath)\smapi-internal\SMAPI.Toolkit.CoreInterfaces.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(GamePath)\smapi-internal\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Stardew Valley">
+      <HintPath>$(GamePath)\Stardew Valley.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

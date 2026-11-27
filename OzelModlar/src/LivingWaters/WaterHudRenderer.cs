@@ -17,7 +17,8 @@ internal sealed class WaterHudRenderer
         int Count,
         bool IsProtected,
         bool IsStocked,
-        bool IsMigrated);
+        bool IsMigrated,
+        bool IsInSeason);
 
     private readonly EcosystemManager Ecosystem;
     private readonly Func<ModConfig> GetConfig;
@@ -74,7 +75,7 @@ internal sealed class WaterHudRenderer
             else if (!this.Ecosystem.IsPlayerNearWaterBody(loc, cursorTile, player.Tile, 5.5f))
                 this.DrawApproachWaterHint(e.SpriteBatch, zoneKey);
             else
-                this.DrawPopulationPanel(e.SpriteBatch, cfg, zoneKey, zone, player, holdingFish: false);
+                this.DrawPopulationPanel(e.SpriteBatch, cfg, loc, zoneKey, zone, player, holdingFish: false);
         }
         catch
         {
@@ -244,11 +245,15 @@ internal sealed class WaterHudRenderer
     private void DrawPopulationPanel(
         SpriteBatch b,
         ModConfig cfg,
+        GameLocation loc,
         string zoneKey,
         ZonePopulation zone,
         Farmer player,
         bool holdingFish)
     {
+        bool IsInSeasonNow(string qid) =>
+            (loc is Farm && cfg.FarmAllowsAllSeasons) || this.Ecosystem.IsFishInSeasonForZone(loc.Name, qid);
+
         var stocked = zone.PlayerStockedSpecies
             .Select(qid => (Qid: qid, Count: zone.SpeciesCounts.GetValueOrDefault(qid, 0)))
             .Where(x => x.Count > 0)
@@ -259,7 +264,8 @@ internal sealed class WaterHudRenderer
                 x.Count,
                 this.Ecosystem.IsProtectedFish(player, x.Qid),
                 true,
-                false))
+                false,
+                IsInSeasonNow(x.Qid)))
             .ToList();
 
         var natural = zone.SpeciesCounts
@@ -274,7 +280,8 @@ internal sealed class WaterHudRenderer
                     kv.Value,
                     this.Ecosystem.IsProtectedFish(player, kv.Key),
                     false,
-                    migrated);
+                    migrated,
+                    IsInSeasonNow(kv.Key));
             })
             .ToList();
 
@@ -307,7 +314,7 @@ internal sealed class WaterHudRenderer
 
         foreach (FishRow row in shownStocked)
         {
-            string tag = row.Count >= 2 ? "Üreme hazır" : "Eş bekliyor";
+            string tag = !row.IsInSeason ? "Mevsim dışı" : row.Count >= 2 ? "Üreme hazır" : "Eş bekliyor";
             float w = iconSize + 10f + font.MeasureString(row.Name).X + 20f + barWidth + 10f + font.MeasureString($"{row.Count} ({tag})").X;
             if (w > contentWidth)
                 contentWidth = w;
@@ -317,7 +324,8 @@ internal sealed class WaterHudRenderer
         {
             string migTag = row.IsMigrated ? " [Göç]" : "";
             string protTag = row.IsProtected ? " [Korumalı]" : "";
-            float w = iconSize + 10f + font.MeasureString(row.Name).X + 20f + barWidth + 10f + font.MeasureString($"{row.Count}{migTag}{protTag}").X;
+            string seasonTag = !row.IsInSeason ? " [Mevsim dışı]" : "";
+            float w = iconSize + 10f + font.MeasureString(row.Name).X + 20f + barWidth + 10f + font.MeasureString($"{row.Count}{migTag}{protTag}{seasonTag}").X;
             if (w > contentWidth)
                 contentWidth = w;
         }
@@ -431,7 +439,10 @@ internal sealed class WaterHudRenderer
 
         if (shownStocked.Count == 0 && shownNatural.Count == 0)
         {
-            Utility.drawTextWithShadow(b, "Bu suda kayıtlı tür yok.", font, new Vector2(innerX, curY), Game1.textColor);
+            string emptyTooltip = loc is Farm && cfg.EmptyFarmStart
+                ? "Boş çiftlik suyu (balık salarak canlandır)."
+                : "Bu suda kayıtlı tür yok.";
+            Utility.drawTextWithShadow(b, emptyTooltip, font, new Vector2(innerX, curY), Game1.textColor);
             curY += 30;
         }
 
@@ -470,20 +481,28 @@ internal sealed class WaterHudRenderer
         if (row.IsStocked)
         {
             bool ready = row.Count >= 2;
-            statusText = ready ? $"{row.Count} (Üreme hazır)" : $"{row.Count} (Eş bekliyor)";
-            statusColor = ready ? new Color(24, 118, 48) : new Color(168, 86, 12);
-            barFillColor = ready ? new Color(62, 168, 86) : new Color(224, 148, 44);
+            string statusLabel = !row.IsInSeason ? "Mevsim dışı" : ready ? "Üreme hazır" : "Eş bekliyor";
+            statusText = $"{row.Count} ({statusLabel})";
+            statusColor = !row.IsInSeason
+                ? new Color(130, 82, 56)
+                : ready ? new Color(24, 118, 48) : new Color(168, 86, 12);
+            barFillColor = !row.IsInSeason
+                ? new Color(165, 130, 102)
+                : ready ? new Color(62, 168, 86) : new Color(224, 148, 44);
         }
         else
         {
             string mig = row.IsMigrated ? " [Göç]" : "";
             string prot = row.IsProtected ? " [Korumalı]" : "";
-            statusText = $"{row.Count}{mig}{prot}";
-            statusColor = row.IsProtected
-                ? new Color(142, 86, 12)
-                : row.IsMigrated
-                    ? new Color(26, 108, 164)
-                    : new Color(56, 42, 30);
+            string season = !row.IsInSeason ? " [Mevsim dışı]" : "";
+            statusText = $"{row.Count}{mig}{prot}{season}";
+            statusColor = !row.IsInSeason
+                ? new Color(130, 82, 56)
+                : row.IsProtected
+                    ? new Color(142, 86, 12)
+                    : row.IsMigrated
+                        ? new Color(26, 108, 164)
+                        : new Color(56, 42, 30);
             barFillColor = row.IsMigrated ? new Color(46, 142, 208) : new Color(56, 148, 204);
         }
 

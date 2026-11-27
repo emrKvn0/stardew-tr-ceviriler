@@ -384,8 +384,9 @@ public sealed class ModEntry : Mod
         var (powersUnlocked, powersTotal, unlockedMasteries, unlockedBooks) = CollectPowersAndMastery(p);
         var (monsterCompleted, monsterTotal, monsterIncomplete) = CollectMonsterGoals(p);
         var (ccAvailable, ccCompleted, ccIncomplete) = CollectCommunityCenterBundles();
+        bool forceWorldRescan = trigger is "SaveLoaded" or "DayStarted" or "Hotkey";
         var (fishGuide, missingFishTotal, missingFishSample, caughtFishCount, collectionFishTotal) =
-            FishGuideBuilder.Build(p, ccIncomplete, storageLocations, tools.BestRodSummary);
+            FishGuideBuilder.Build(p, ccIncomplete, storageLocations, tools.BestRodSummary, forceWorldRescan);
         string collectionsSummary = CollectCollectionsSummary(p, caughtFishCount, collectionFishTotal);
 
         var shippingItems = farm.getShippingBin(p)
@@ -402,8 +403,30 @@ public sealed class ModEntry : Mod
         var equipped = new List<string>();
         if (p.hat.Value is not null) equipped.Add($"Hat: {p.hat.Value.DisplayName}");
         if (p.boots.Value is not null) equipped.Add($"Boots: {p.boots.Value.DisplayName}");
-        if (p.leftRing.Value is not null) equipped.Add($"LeftRing: {p.leftRing.Value.DisplayName}");
-        if (p.rightRing.Value is not null) equipped.Add($"RightRing: {p.rightRing.Value.DisplayName}");
+        bool listedWmrRings = false;
+        try
+        {
+            var wmr = this.Helper.ModRegistry.GetApi<IWearMoreRingsApi>("bcmpinc.WearMoreRings");
+            if (wmr is not null)
+            {
+                int slotCount = wmr.RingSlotCount();
+                var rings = new List<string>();
+                for (int i = 0; i < slotCount; i++)
+                {
+                    Ring? r = wmr.GetRing(i);
+                    if (r is not null)
+                        rings.Add(r.DisplayName);
+                }
+                equipped.Add($"Rings ({rings.Count}/{slotCount}): {(rings.Count > 0 ? string.Join(", ", rings) : "None")}");
+                listedWmrRings = true;
+            }
+        }
+        catch { }
+        if (!listedWmrRings)
+        {
+            if (p.leftRing.Value is not null) equipped.Add($"LeftRing: {p.leftRing.Value.DisplayName}");
+            if (p.rightRing.Value is not null) equipped.Add($"RightRing: {p.rightRing.Value.DisplayName}");
+        }
         foreach (var t in p.trinketItems.Where(t => t is not null))
             equipped.Add($"Trinket: {t!.DisplayName}");
 
@@ -449,10 +472,36 @@ public sealed class ModEntry : Mod
         bool isFestivalToday = Utility.isFestivalDay();
         bool isRainingOnFarm = farm.IsRainingHere();
 
-        var (mustDoToday, dailyRoutine, strategicInsights) = BuildActionSections(
+        bool desertUnlocked = unlocked.Contains("Desert");
+        var ownedIndex = new OwnedInventoryIndex(inventory, chests, buildings, farmCaveReadyItems, fruitTrees, crops);
+        var worldIntel = WorldIntelligenceBuilder.Build(
+            this.ModOutputDir,
+            this.Monitor,
+            this.Helper.ModRegistry,
+            p,
+            farm,
+            greenhouseUnlocked,
+            islandUnlocked,
+            desertUnlocked,
+            ccAvailable,
+            isRainingOnFarm,
+            isBooksellerToday,
+            inventory,
+            chests,
+            buildings,
+            machines,
+            crops,
+            friendships,
+            chestLocations,
+            ownedIndex,
+            tools.Hoe,
+            forceWorldRescan);
+
+        var (mustDoToday, dailyRoutine, strategicInsights, topProfitableCrops) = BuildActionSections(
             p,
             greenhouseUnlocked,
             islandUnlocked,
+            desertUnlocked,
             isRainingOnFarm,
             Game1.weatherForTomorrow,
             isFestivalToday,
@@ -479,7 +528,9 @@ public sealed class ModEntry : Mod
             quests,
             specialOrders,
             friendships,
-            fishGuide);
+            fishGuide,
+            ownedIndex,
+            worldIntel);
 
         return new LiveStateSnapshot
         {
@@ -559,6 +610,7 @@ public sealed class ModEntry : Mod
             HayInSilos = farm.piecesOfHay.Value,
             HayCapacity = farm.GetHayCapacity(),
             Crops = crops,
+            TopProfitableCrops = topProfitableCrops,
             FruitTrees = fruitTrees,
             FarmForageSpots = farmForageSpots,
             Buildings = buildings,
@@ -575,7 +627,8 @@ public sealed class ModEntry : Mod
             Quests = quests,
             SpecialOrders = specialOrders,
             Friendships = friendships,
-            FishGuide = fishGuide
+            FishGuide = fishGuide,
+            WorldIntel = worldIntel
         };
     }
 
@@ -980,7 +1033,9 @@ public sealed class ModEntry : Mod
                 MaxAnimalCapacity: maxAnimalCapacity,
                 SlimeHutch: slimeHutchEntry,
                 HayInTrough: hayInTrough,
-                AnimalDoorOpen: animalDoorOpen));
+                AnimalDoorOpen: animalDoorOpen,
+                DaysUntilUpgrade: b.daysUntilUpgrade.Value,
+                UpgradeTarget: b.daysUntilUpgrade.Value > 0 ? b.upgradeName.Value : null));
         }
 
         return list;
@@ -996,6 +1051,8 @@ public sealed class ModEntry : Mod
         Game1.MasterPlayer.mailReceived.Contains("willyBackRoomInvitation")
         || Game1.player.mailReceived.Contains("willyBackRoomInvitation")
         || Game1.player.locationsVisited.Contains("IslandSouth");
+
+    internal static bool IsLocationUnlockedForExport(GameLocation loc, Farmer player) => IsLocationUnlocked(loc, player);
 
     private static bool IsLocationUnlocked(GameLocation loc, Farmer player)
     {
@@ -2229,9 +2286,9 @@ public sealed class ModEntry : Mod
         return $"Fish {caughtFish}/{totalFish} | Shipped {shippedCount} | Cooking {knownCooking}/{totalCooking} | Crafting {knownCrafting}/{totalCrafting}";
     }
 
-    private sealed record OwnedSource(string SourceLabel, int Stack, int Quality, string DisplayName);
+    internal sealed record OwnedSource(string SourceLabel, int Stack, int Quality, string DisplayName);
 
-    private sealed class OwnedInventoryIndex
+    internal sealed class OwnedInventoryIndex
     {
         private readonly Dictionary<string, List<OwnedSource>> _byQid = new(StringComparer.OrdinalIgnoreCase);
         private readonly List<(string Qid, ItemEntry Item, string Source)> _storageItems = new();
@@ -2402,10 +2459,11 @@ public sealed class ModEntry : Mod
         }
     }
 
-    private static (List<string> MustDoToday, List<string> DailyRoutine, List<string> StrategicInsights) BuildActionSections(
+    private static (List<string> MustDoToday, List<string> DailyRoutine, List<string> StrategicInsights, List<CropProfitEntry> TopProfitableCrops) BuildActionSections(
         Farmer player,
         bool greenhouseUnlocked,
         bool islandUnlocked,
+        bool desertUnlocked,
         bool isRainingOnFarm,
         string weatherForTomorrow,
         bool isFestivalToday,
@@ -2432,9 +2490,10 @@ public sealed class ModEntry : Mod
         List<QuestEntry> quests,
         List<SpecialOrderEntry> specialOrders,
         List<FriendshipEntry> friendships,
-        FishGuideSnapshot? fishGuide)
+        FishGuideSnapshot? fishGuide,
+        OwnedInventoryIndex owned,
+        WorldIntelligenceSnapshot worldIntel)
     {
-        var owned = new OwnedInventoryIndex(inventory, chests, buildings, farmCaveReadyItems, fruitTrees, crops);
         Dictionary<string, CropData> cropData;
         try
         {
@@ -2473,6 +2532,7 @@ public sealed class ModEntry : Mod
             birthdayToday,
             toolBeingUpgraded,
             daysLeftForToolUpgrade,
+            buildings,
             museumReadyToDonate,
             travelingCart,
             crops,
@@ -2483,7 +2543,8 @@ public sealed class ModEntry : Mod
             fishGuide,
             owned,
             cropData,
-            harvestToCrop);
+            harvestToCrop,
+            worldIntel);
 
         var routine = BuildDailyRoutine(
             player,
@@ -2496,6 +2557,14 @@ public sealed class ModEntry : Mod
             buildings,
             machines,
             owned);
+
+        var topProfitableCrops = BuildTopProfitableCrops(
+            player,
+            daysLeft,
+            desertUnlocked,
+            travelingCart,
+            owned,
+            cropData);
 
         var strategic = BuildStrategicInsights(
             player,
@@ -2510,9 +2579,11 @@ public sealed class ModEntry : Mod
             ccIncomplete,
             specialOrders,
             owned,
-            cropData);
+            cropData,
+            topProfitableCrops,
+            worldIntel);
 
-        return (mustDo, routine, strategic);
+        return (mustDo, routine, strategic, topProfitableCrops);
     }
 
     private static List<string> BuildMustDoToday(
@@ -2527,6 +2598,7 @@ public sealed class ModEntry : Mod
         string? birthdayToday,
         string? toolBeingUpgraded,
         int daysLeftForToolUpgrade,
+        List<BuildingEntry> buildings,
         List<string> museumReadyToDonate,
         List<ShopItemEntry> travelingCart,
         List<CropEntry> crops,
@@ -2537,7 +2609,8 @@ public sealed class ModEntry : Mod
         FishGuideSnapshot? fishGuide,
         OwnedInventoryIndex owned,
         Dictionary<string, CropData> cropData,
-        Dictionary<string, (string SeedQid, string SeedName, CropData Data)> harvestToCrop)
+        Dictionary<string, (string SeedQid, string SeedName, CropData Data)> harvestToCrop,
+        WorldIntelligenceSnapshot worldIntel)
     {
         var list = new List<string>();
         string seasonTr = FishGuideBuilder.TranslateSeason(Game1.currentSeason).Replace("Guz", "Güz").Replace("Kis", "Kış");
@@ -2563,7 +2636,11 @@ public sealed class ModEntry : Mod
         if (isFestivalToday)
             list.Add($"Bugün Festival Günü ({festivalName ?? "Festival"}): Dükkanlar kapalı olabilir; etkinlik saatini ve yerini kaçırma.");
         if (isBooksellerToday)
-            list.Add("Kitapçı Bugün Kasabada: Yeni güç/beceri kitapları için mutlaka uğra.");
+        {
+            var unreadBooks = worldIntel.BooksellerStock.Where(b => !b.AlreadyRead).Take(5).Select(b => $"{b.DisplayName} ({b.Price:N0}g)").ToList();
+            string bookDetail = unreadBooks.Count > 0 ? $" | Okunmamış kitaplar: {string.Join(", ", unreadBooks)}" : "";
+            list.Add($"Kitapçı Bugün Kasabada: Yeni güç/beceri kitapları için mutlaka uğra{bookDetail}.");
+        }
 
         if (!string.IsNullOrWhiteSpace(queenOfSauceNote))
         {
@@ -2599,18 +2676,86 @@ public sealed class ModEntry : Mod
 
         if (!string.IsNullOrWhiteSpace(birthdayToday))
         {
-            FriendshipEntry? fr = friendships.FirstOrDefault(f => f.Npc.Equals(birthdayToday, StringComparison.OrdinalIgnoreCase));
-            string giftNote = fr is not null
-                ? $"{fr.Hearts} kalp, bugün hediye: {(fr.GiftsToday > 0 ? "Verildi" : "HENÜZ VERİLMEDİ")}"
-                : "henüz hediye verilmedi";
-            list.Add($"Bugün Doğum Günü — {birthdayToday} ({giftNote}): Sevdiği bir hediye verirsen 8x arkadaşlık puanı alırsın.");
+            var todayBirthdays = worldIntel.BirthdayGifts.Where(b => b.DaysUntil == 0).ToList();
+            if (todayBirthdays.Count > 0)
+            {
+                foreach (var bday in todayBirthdays)
+                {
+                    string status = bday.GiftedToday ? "Verildi" : "HENÜZ VERİLMEDİ";
+                    string giftHint = bday.OwnedLovedGifts.Count > 0
+                        ? $" | Sandıktaki Sevdiği Hediyeler: {string.Join(", ", bday.OwnedLovedGifts.Take(3))}"
+                        : (bday.OwnedLikedGifts.Count > 0 ? $" | Beğendiği (Sandıkta): {string.Join(", ", bday.OwnedLikedGifts.Take(2))}" : "");
+                    string locHint = !string.IsNullOrWhiteSpace(bday.CurrentLocation) ? $" | Konum: {bday.CurrentLocation}" : "";
+                    list.Add($"Bugün Doğum Günü — {bday.DisplayName} ({bday.CurrentHearts} kalp, hediye: {status}){locHint}{giftHint}.");
+                }
+            }
+            else
+            {
+                FriendshipEntry? fr = friendships.FirstOrDefault(f => f.Npc.Equals(birthdayToday, StringComparison.OrdinalIgnoreCase));
+                string giftNote = fr is not null
+                    ? $"{fr.Hearts} kalp, bugün hediye: {(fr.GiftsToday > 0 ? "Verildi" : "HENÜZ VERİLMEDİ")}"
+                    : "henüz hediye verilmedi";
+                list.Add($"Bugün Doğum Günü — {birthdayToday} ({giftNote}): Sevdiği bir hediye verirsen 8x arkadaşlık puanı alırsın.");
+            }
         }
+
+        // Ready-to-trigger heart / story events today (Vanilla + Mods)
+        var triggerableToday = worldIntel.ReadyEvents
+            .Where(e => e.LiveStatus is "ŞU AN TETİKLENEBİLİR" or "BUGÜN DAHA SONRA")
+            .Take(4)
+            .ToList();
+        if (triggerableToday.Count > 0)
+        {
+            string evList = string.Join(" || ", triggerableToday.Select(e =>
+                $"{e.NpcSummary} -> {e.LocationDisplayName} ({e.TimeWindow}, {e.LiveStatus})"));
+            list.Add($"Tetiklenmeye Hazır Hikâye/Kalp Etkinlikleri ({worldIntel.ReadyEvents.Count(e => e.LiveStatus is "ŞU AN TETİKLENEBİLİR" or "BUGÜN DAHA SONRA")} bugün, tamamı live_world.md'de): {evList}");
+        }
+
+        // Daily Help Wanted & Untaken Special Order Boards
+        if (worldIntel.DailyHelpWanted is { AlreadyAccepted: false } hw)
+        {
+            string ownedTag = hw.HasTargetItemInStorage
+                ? $" [SANDIKTA HAZIR: {hw.StorageSources}]"
+                : string.Empty;
+            list.Add($"Pierre Önü Günlük İlan (Henüz Alınmadı): {hw.Title} — {hw.Objective}{ownedTag}");
+        }
+
+        var openOrders = worldIntel.AvailableSpecialOrders.Where(o => !o.BoardAlreadyAcceptedToday).ToList();
+        if (openOrders.Count > 0)
+        {
+            var boardSummary = openOrders
+                .GroupBy(o => o.BoardLabel)
+                .Select(g => $"{g.Key}: {string.Join(" / ", g.Select(x => $"{x.Name} ({x.DurationText})"))}");
+            list.Add($"Alınmamış Özel Sipariş Panoları ({openOrders.Count}): {string.Join(" || ", boardSummary)}");
+        }
+
+        // Data-driven Must-Do rules from advisor_rules.json (hot-reloaded without game restart)
+        foreach (string ruleMsg in worldIntel.MustDoRules)
+            list.Add(ruleMsg);
 
         if (!string.IsNullOrWhiteSpace(toolBeingUpgraded))
         {
             list.Add(daysLeftForToolUpgrade <= 0
                 ? $"Demirci (Clint): {toolBeingUpgraded} yükseltmesi hazır, bugün teslim al!"
                 : $"Demirci (Clint): {toolBeingUpgraded} yükseltmesi için {daysLeftForToolUpgrade} gün kaldı.");
+        }
+
+        if (player.daysUntilHouseUpgrade.Value > 0)
+        {
+            list.Add($"Marangoz (Robin): Çiftlik Evi Sv.{player.HouseUpgradeLevel + 1} yükseltmesi devam ediyor ({player.daysUntilHouseUpgrade.Value} gün kaldı).");
+        }
+
+        foreach (BuildingEntry b in buildings)
+        {
+            if (b.DaysOfConstructionLeft > 0)
+                list.Add($"Marangoz (Robin): {TranslateBuildingTypeTr(b.BuildingType)} inşaatı devam ediyor ({b.DaysOfConstructionLeft} gün kaldı).");
+            if (b.DaysUntilUpgrade > 0)
+            {
+                string targetTr = !string.IsNullOrWhiteSpace(b.UpgradeTarget)
+                    ? $" -> {TranslateBuildingTypeTr(b.UpgradeTarget)}"
+                    : "";
+                list.Add($"Marangoz (Robin): {TranslateBuildingTypeTr(b.BuildingType)}{targetTr} yükseltmesi devam ediyor ({b.DaysUntilUpgrade} gün kaldı).");
+            }
         }
 
         if (weatherForTomorrow is "Rain" or "Storm" or "GreenRain")
@@ -2995,6 +3140,149 @@ public sealed class ModEntry : Mod
         return hints;
     }
 
+    private static List<CropProfitEntry> BuildTopProfitableCrops(
+        Farmer player,
+        int daysLeftInSeason,
+        bool desertUnlocked,
+        List<ShopItemEntry> travelingCart,
+        OwnedInventoryIndex owned,
+        Dictionary<string, CropData> cropData)
+    {
+        var results = new List<CropProfitEntry>();
+        if (daysLeftInSeason <= 0 || cropData.Count == 0)
+            return results;
+
+        var shopSeeds = new Dictionary<string, (int Price, string ShopName)>(StringComparer.OrdinalIgnoreCase);
+
+        static void AddShopStock(string shopId, string shopLabel, Dictionary<string, (int Price, string ShopName)> map)
+        {
+            try
+            {
+                var stock = ShopBuilder.GetShopStock(shopId);
+                foreach (var pair in stock)
+                {
+                    if (pair.Key is null || pair.Value.Price <= 0)
+                        continue;
+
+                    string qid = FishGuideBuilder.NormalizeQid(pair.Key.QualifiedItemId ?? string.Empty);
+                    if (string.IsNullOrEmpty(qid))
+                        continue;
+
+                    if (!map.TryGetValue(qid, out var existing) || pair.Value.Price < existing.Price)
+                        map[qid] = (pair.Value.Price, shopLabel);
+                }
+            }
+            catch
+            {
+                // Ignore inaccessible or modded shop errors
+            }
+        }
+
+        AddShopStock("SeedShop", "Pierre", shopSeeds);
+        if (desertUnlocked)
+            AddShopStock("Sandy", "Çöl", shopSeeds);
+
+        foreach (var t in travelingCart)
+        {
+            if (t.Price <= 0 || string.IsNullOrWhiteSpace(t.QualifiedId))
+                continue;
+            string qid = FishGuideBuilder.NormalizeQid(t.QualifiedId);
+            if (!shopSeeds.TryGetValue(qid, out var existing) || t.Price < existing.Price)
+                shopSeeds[qid] = (t.Price, "Gezgin Tüccar");
+        }
+
+        foreach (var (seedId, cd) in cropData)
+        {
+            if (cd is null || cd.Seasons is null || !cd.Seasons.Contains(Game1.season))
+                continue;
+
+            int growthDays = cd.DaysInPhase?.Sum() ?? 0;
+            if (growthDays <= 0 || growthDays > daysLeftInSeason)
+                continue;
+
+            string seedQid = FishGuideBuilder.NormalizeQid(seedId);
+            string harvestQid = FishGuideBuilder.NormalizeQid(cd.HarvestItemId ?? string.Empty);
+            if (string.IsNullOrEmpty(harvestQid))
+                continue;
+
+            var harvestObj = ItemRegistry.Create(harvestQid) as StardewValley.Object;
+            if (harvestObj is null)
+                continue;
+
+            int sellPrice = harvestObj.sellToStorePrice();
+            if (sellPrice <= 0)
+                continue;
+
+            bool inShop = shopSeeds.TryGetValue(seedQid, out var shopInfo);
+            int ownedCount = owned.GetStorageCount(seedQid);
+            if (!inShop && ownedCount <= 0)
+                continue;
+
+            int seedPrice = inShop ? shopInfo.Price : (ItemRegistry.Create(seedQid)?.salePrice() ?? 0);
+            string shopSource = inShop ? shopInfo.ShopName : "Sandık";
+            string seedName = ItemRegistry.GetData(seedQid)?.DisplayName ?? seedId;
+
+            int minStack = Math.Max(1, cd.HarvestMinStack);
+            int maxStack = Math.Max(minStack, cd.HarvestMaxStack);
+            if (cd.HarvestMaxIncreasePerFarmingLevel > 0)
+                maxStack += (int)(player.FarmingLevel * cd.HarvestMaxIncreasePerFarmingLevel);
+
+            double extraChance = Math.Clamp(cd.ExtraHarvestChance, 0.0, 0.95);
+            double expectedYield = ((minStack + maxStack) / 2.0) + (extraChance > 0 ? extraChance / (1.0 - extraChance) : 0.0);
+
+            int harvestsInSeason;
+            double netProfitInSeason;
+            if (cd.RegrowDays > 0)
+            {
+                harvestsInSeason = 1 + (daysLeftInSeason - growthDays) / cd.RegrowDays;
+                netProfitInSeason = (harvestsInSeason * expectedYield * sellPrice) - seedPrice;
+            }
+            else
+            {
+                int cycles = daysLeftInSeason / growthDays;
+                harvestsInSeason = cycles;
+                netProfitInSeason = cycles * ((expectedYield * sellPrice) - seedPrice);
+            }
+
+            if (netProfitInSeason <= 0)
+                continue;
+
+            double profitPerDay = netProfitInSeason / daysLeftInSeason;
+
+            string sourceTag = (seedId.Contains("Cornucopia", StringComparison.OrdinalIgnoreCase)
+                || harvestQid.Contains("Cornucopia", StringComparison.OrdinalIgnoreCase))
+                ? "Cornucopia"
+                : seedId.Contains("FlashShifter", StringComparison.OrdinalIgnoreCase)
+                    ? "SVE"
+                    : seedId.Contains("Rafseazz", StringComparison.OrdinalIgnoreCase)
+                        ? "Ridgeside"
+                        : seedId.Contains("EastScarp", StringComparison.OrdinalIgnoreCase)
+                            ? "East Scarp"
+                            : "Vanilla";
+
+            results.Add(new CropProfitEntry(
+                harvestObj.DisplayName,
+                seedName,
+                sourceTag,
+                shopSource,
+                seedPrice,
+                sellPrice,
+                growthDays,
+                cd.RegrowDays,
+                Math.Round(expectedYield, 2),
+                harvestsInSeason,
+                Math.Round(netProfitInSeason, 0),
+                Math.Round(profitPerDay, 1),
+                ownedCount));
+        }
+
+        return results
+            .OrderByDescending(x => x.ProfitPerDay)
+            .ThenByDescending(x => x.NetProfitInSeason)
+            .Take(12)
+            .ToList();
+    }
+
     private static List<string> BuildStrategicInsights(
         Farmer player,
         bool greenhouseUnlocked,
@@ -3008,19 +3296,65 @@ public sealed class ModEntry : Mod
         List<BundleEntry> ccIncomplete,
         List<SpecialOrderEntry> specialOrders,
         OwnedInventoryIndex owned,
-        Dictionary<string, CropData> cropData)
+        Dictionary<string, CropData> cropData,
+        List<CropProfitEntry> topProfitableCrops,
+        WorldIntelligenceSnapshot worldIntel)
     {
         var list = new List<string>();
 
+        // 0. World, Story & Unlock Gates (Creator-Level Multi-Domain Briefing)
+        foreach (var gate in worldIntel.ProgressionGates.Take(4))
+        {
+            list.Add($"[{gate.Category}] {gate.Title} ({gate.Progress}): {gate.NextStep}");
+        }
+
+        // 0b. High-Impact NPC Targets (Recipes, Events, Mod Storylines + Owned Gifts)
+        if (worldIntel.NpcMilestones.Count > 0)
+        {
+            var topNpcs = worldIntel.NpcMilestones.Take(4).Select(n =>
+            {
+                string gift = n.OwnedLovedGifts.Count > 0
+                    ? $" | Sandıkta sevdiği: {n.OwnedLovedGifts[0]}"
+                    : string.Empty;
+                return $"{n.DisplayName} ({n.CurrentHearts}♥ -> {n.TargetHearts}♥: {n.Unlocks[0]}{gift})";
+            });
+            list.Add("Öncelikli Karakter Yatırımları (Tarif / Hikâye Açanlar): " + string.Join(" || ", topNpcs));
+        }
+
+        // 0c. Installed Mod Ecosystem Opportunities (Automate, SVE, RSV, East Scarp, Solarium, BiggerBackpack, etc.)
+        var topModTips = worldIntel.ModHighlights
+            .Where(m => !m.ActionableTip.Contains("harika çalışıyor", StringComparison.OrdinalIgnoreCase))
+            .Take(4)
+            .Select(m => $"{m.ModName} ({m.StatusSummary}): {m.ActionableTip}")
+            .ToList();
+        if (topModTips.Count > 0)
+            list.Add("Yüklü Mod Fırsatları (tamamı live_world.md'de): " + string.Join(" || ", topModTips));
+
+        // 0d. Equipment & Unbuilt High-Value Buildings
+        if (worldIntel.EquipmentAlerts.Count > 0)
+            list.Add("Ekipman / Çanta Kontrolü: " + string.Join(" | ", worldIntel.EquipmentAlerts));
+
+        if (worldIntel.UnbuiltKeyBuildings.Count > 0)
+            list.Add("Henüz İnşa Edilmemiş Değerli Binalar: " + string.Join(" | ", worldIntel.UnbuiltKeyBuildings.Take(3)));
+
+        // 1. Most Profitable Crops This Season (Cornucopia + Vanilla + Mods)
+        if (topProfitableCrops.Count > 0 && daysLeftInSeason >= 5)
+        {
+            string seasonTr = FishGuideBuilder.TranslateSeason(Game1.currentSeason).Replace("Guz", "Güz").Replace("Kis", "Kış");
+            var top4 = topProfitableCrops.Take(4).Select(p =>
+            {
+                string regrow = p.RegrowDays > 0 ? $"/{p.RegrowDays}g yenilenir" : "";
+                string own = p.OwnedSeedCount > 0 ? $", sandıkta x{p.OwnedSeedCount}" : "";
+                return $"{p.CropName} [{p.SourceTag}] {p.ProfitPerDay:0.1}g/gün (tohum {p.SeedPrice}g {p.ShopSource}, {p.GrowthDays}g{regrow}{own})";
+            });
+            list.Add($"En Kârlı {seasonTr} Ekinleri (kalan {daysLeftInSeason}g, ham satış kârı): " + string.Join(" | ", top4) + ".");
+        }
+
         // 1. Rare Seed (347) & Ancient Seed (114/499) / Ancient Fruit (454)
         var (rareSeedCount, rareSeedSources) = owned.FindStorageMatches("(O)347");
-        if (rareSeedCount > 0 && Game1.season == Season.Fall && daysLeftInSeason >= 24)
+        if (rareSeedCount > 0 && !(Game1.season == Season.Fall && daysLeftInSeason >= 24))
         {
-            list.Add($"Ender Tohum Fırsatı (BUGÜN EK!): Sandıkta Ender Tohum x{rareSeedCount} var [{string.Join(", ", rareSeedSources)}]. 24 günde büyür ve YALNIZCA Güz'de yetişir -> Güz 25'te hasat edip Gizli Orman'daki heykele verirsen kalıcı +34 Enerji (Yıldıztohumu) kazanırsın; kaçırırsan 1 yıl beklersin!");
-        }
-        else if (rareSeedCount > 0)
-        {
-            list.Add($"Ender Tohum Stokta (x{rareSeedCount}): Güz 1–4 arasında açık tarlaya veya Sera açılınca Sera'ya ek.");
+            list.Add($"Ender Tohum Stokta (x{rareSeedCount}): [{string.Join(", ", rareSeedSources)}] — Güz 1–4 arasında açık tarlaya veya Sera açılınca Sera'ya ek.");
         }
 
         var (ancientSeedObjCount, ancientSeedObjSources) = owned.FindStorageMatches("(O)499");
@@ -3060,37 +3394,7 @@ public sealed class ModEntry : Mod
             }
         }
 
-        // 3. Keg & Oak Resin Scaling
-        int kegCount = machines.FirstOrDefault(m => m.Name.Equals("Keg", StringComparison.OrdinalIgnoreCase))?.Total ?? 0;
-        int tapperCount = machines.Where(m => m.Name.Contains("Tapper", StringComparison.OrdinalIgnoreCase)).Sum(m => m.Total);
-        int oakResin = owned.GetStorageCount("(O)725");
-        int hopsOwned = owned.GetStorageCount("(O)304");
-        int starfruitOwned = owned.GetStorageCount("(O)268");
-        if (kegCount < 25)
-        {
-            list.Add($"Fıçı ve Meşe Reçinesi Ölçekleme (Şu an {kegCount} Fıçı, {tapperCount} Akıtıcı, sandıkta {oakResin} Meşe Reçinesi): Meşe ağaçlarına daha fazla Akıtıcı takmak ileride Sera + Eski Meyve/Yıldızmeyvesi/Şerbetçi Otu şarap/bira gelirini katlar"
-                + (hopsOwned + starfruitOwned > 0 ? $" (sandıkta şimdiden {hopsOwned} Şerbetçi Otu + {starfruitOwned} Yıldızmeyvesi bekliyor)." : "."));
-        }
-
-        // 4. Ore Backlog vs Coal + Skull Cavern Crystalarium
-        int copperOre = owned.GetStorageCount("(O)378");
-        int ironOre = owned.GetStorageCount("(O)380");
-        int goldOre = owned.GetStorageCount("(O)384");
-        int iridiumOre = owned.GetStorageCount("(O)386");
-        int coal = owned.GetStorageCount("(O)382");
-        if (copperOre + ironOre + goldOre + iridiumOre >= 100 && coal < 25)
-        {
-            list.Add($"Kömür ve Maden Darboğazı: Sandıkta {ironOre} Demir, {goldOre} Altın, {copperOre} Bakır, {iridiumOre} İridyum cevheri birikmiş ama yalnızca {coal} Kömür var! Maden 40–79. katlarda Toz Tayfı kesmek hem Kömür sağlar hem de Hırsız Yüzüğü (ek ganimet) hedefine yaklaştırır.");
-        }
-
-        var cryst = machines.FirstOrDefault(m => m.Name.Equals("Crystalarium", StringComparison.OrdinalIgnoreCase));
-        if (cryst is not null)
-        {
-            int jade = owned.GetStorageCount("(O)70");
-            list.Add($"Kristalaryum & Kafatası Mağarası Hazırlığı (Şu an {cryst.Total} Kristalaryum, sandıkta {jade} Yeşim): Yeşim çoğaltıp Pazar günleri Patisko Çölü Tüccarı'ndan 1:1 Merdiven takaslamak Kafatası Mağarası'nda 100+ kata inmeyi kolaylaştırır.");
-        }
-
-        // 5. Special Order / Long-Term Resource Tracking
+        // 3. Special Order / Long-Term Resource Tracking
         foreach (var so in specialOrders)
         {
             string combined = string.Join(" ", so.Objectives);
@@ -3111,17 +3415,9 @@ public sealed class ModEntry : Mod
                 list.Add($"Özel Proje Hazırlığı ({so.Name}): {string.Join(" | ", checks)}.");
         }
 
-        // 6. Mastery / House Upgrade / Unlock Gate
-        if (player.HouseUpgradeLevel < 2 && player.Money >= 10000)
-        {
-            list.Add($"Çiftlik Evi Yükseltmesi (Şu an Sv.{player.HouseUpgradeLevel}, Bütçe: {player.Money:N0}g): Robin'de Sv.2 (Mutfak) açmak madencilik/balıkçılık için yemek buff'ı üretmeyi ve tarif koleksiyonunu açar (10.000g + 450 Odun).");
-        }
-        if (!islandUnlocked && ccAvailable)
-        {
-            int minSkillNear10 = new[] { player.FarmingLevel, player.MiningLevel, player.ForagingLevel, player.FishingLevel }.Count(lv => lv >= 9);
-            if (minSkillNear10 >= 2)
-                list.Add($"Ustalık (Mastery) & İleri Oyun Hazırlığı: Birden fazla beceri Sv.9'da; tüm ana becerileri Sv.10'a ulaştırmak Kömürözü Ormanı'ndaki Ustalık Mağarası'nı açar.");
-        }
+        // 4. Data-driven strategic rules from advisor_rules.json (hot-reloaded without game restart)
+        foreach (string ruleMsg in worldIntel.StrategicRules)
+            list.Add(ruleMsg);
 
         return list;
     }
@@ -3233,7 +3529,7 @@ public sealed class ModEntry : Mod
         _ => area
     };
 
-    private static string TranslateRegionNameTr(string name) => name switch
+    internal static string TranslateRegionNameTr(string name) => name switch
     {
         "Farm" => "Çiftlik",
         "FarmCave" => "Çiftlik Mağarası",
@@ -3253,7 +3549,7 @@ public sealed class ModEntry : Mod
         _ => name
     };
 
-    private static string TranslateMachineNameTr(string name) => name switch
+    internal static string TranslateMachineNameTr(string name) => name switch
     {
         "Keg" => "Fıçı",
         "Preserves Jar" => "Konserve Kavanozu",

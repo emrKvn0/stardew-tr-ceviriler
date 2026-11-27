@@ -70,6 +70,16 @@ internal static class FishGuideBuilder
 {
     private static readonly string[] AllSeasonKeys = { "spring", "summer", "fall", "winter" };
 
+    private sealed record CachedFishBuild(
+        string Key,
+        FishGuideSnapshot Guide,
+        int MissingSeasonalTotal,
+        List<string> MissingSeasonalSample,
+        int CaughtCount,
+        int CollectionTotalCount);
+
+    private static CachedFishBuild? _buildCache;
+
     /// <summary>
     /// Builds a complete runtime fish & spawn guide from live patched Data/Locations, Data/Fish,
     /// active Quests/Special Orders, and incomplete Community Center bundles.
@@ -84,8 +94,44 @@ internal static class FishGuideBuilder
             Farmer player,
             List<BundleEntry> incompleteBundles,
             IEnumerable<GameLocation> storageLocations,
-            string? bestRodSummary)
+            string? bestRodSummary,
+            bool forceRebuild = false)
     {
+        int bundleSig = incompleteBundles.Count * 397;
+        foreach (BundleEntry b in incompleteBundles)
+            bundleSig = (bundleSig * 31) ^ b.FilledCount ^ (b.MissingItemIds.Count * 17);
+
+        int questSig = player.questLog.Count * 101;
+        foreach (Quest? q in player.questLog)
+        {
+            if (q is not null)
+                questSig ^= q.completed.Value ? 1 : (q.daysLeft.Value * 7);
+        }
+
+        int orderSig = player.team.specialOrders.Count * 131;
+        foreach (SpecialOrder? o in player.team.specialOrders)
+        {
+            if (o is null)
+                continue;
+            foreach (var obj in o.objectives)
+            {
+                if (obj is not null)
+                    orderSig ^= obj.GetCount();
+            }
+        }
+
+        bool isRaining = Game1.getFarm()?.IsRainingHere() ?? Game1.isRaining;
+        string cacheKey = $"{StardewModdingAPI.Constants.SaveFolderName}|{Game1.Date.TotalDays}|{Game1.timeOfDay / 100}|{isRaining}|{player.FishingLevel}|{player.fishCaught.Count()}|{bundleSig}|{questSig}|{orderSig}|{bestRodSummary}";
+        if (!forceRebuild && _buildCache is not null && _buildCache.Key == cacheKey)
+        {
+            return (
+                _buildCache.Guide,
+                _buildCache.MissingSeasonalTotal,
+                _buildCache.MissingSeasonalSample,
+                _buildCache.CaughtCount,
+                _buildCache.CollectionTotalCount);
+        }
+
         var fishData = DataLoader.Fish(Game1.content);
         var locationsData = DataLoader.Locations(Game1.content);
         var objectsData = DataLoader.Objects(Game1.content);
@@ -232,6 +278,7 @@ internal static class FishGuideBuilder
             DuplicateNameWarnings = duplicateWarnings
         };
 
+        _buildCache = new CachedFishBuild(cacheKey, guide, missingSeasonal.Count, summarySamples, caughtCount, collectionTotal);
         return (guide, missingSeasonal.Count, summarySamples, caughtCount, collectionTotal);
     }
 

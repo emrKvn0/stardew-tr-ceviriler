@@ -1,0 +1,16 @@
+{
+  "Name": "Happy Birthday Cache Lag Fix",
+  "Author": "Local",
+  "Version": "1.0.0",
+  "Description": "Prevents HappyBirthday's Content Patcher gift tokens from re-rolling every 10 in-game minutes and invalidating all mod asset caches.",
+  "UniqueID": "Local.HappyBirthdayLagFix",
+  "EntryDll": "HappyBirthdayLagFix.dll",
+  "MinimumApiVersion": "4.0.0",
+  "UpdateKeys": [],
+  "Dependencies": [
+    {
+      "UniqueID": "Omegasis.HappyBirthday",
+      "IsRequired": false
+    }
+  ]
+}

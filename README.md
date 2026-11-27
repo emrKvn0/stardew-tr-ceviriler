@@ -1,6 +1,6 @@
 # Stardew Valley Mod Türkçe Çevirileri & Özel Modlar
 
-Stardew Valley 1.6 mod paketi için tüm `tr.json` ve özel Türkçe çeviri dosyalarının tam yedeği (**137 dosya**, **92 mod/modül**), kendi geliştirdiğimiz **4 özel SMAPI modu** ve yamalanan mevcut mod düzeltmeleri.
+Stardew Valley 1.6 mod paketi için tüm `tr.json` ve özel Türkçe çeviri dosyalarının tam yedeği (**137 dosya**, **92 mod/modül**), kendi geliştirdiğimiz **6 özel SMAPI modu** ve yamalanan mevcut mod düzeltmeleri.
 
 ## Kurulum (Modlar Güncellendiğinde Geri Yükleme)
 1. **Türkçe Çeviriler + Yamalar:** PowerShell ile `.\kur.ps1` çalıştırın (veya `Mods` klasörünü oyunun `Stardew Valley\Mods` klasörüne kopyalayıp **"Hedefteki dosyaları değiştir"** deyin).
@@ -12,12 +12,14 @@ Tüm özel modların derlenmiş ve kuruluma hazır `.zip` paketleri `OzelModlar/
 
 | Mod Adı | Sürüm | UniqueID | Zip Paketi | Açıklama |
 | :--- | :--- | :--- | :--- | :--- |
-| Canlı Sular (Living Waters) | `1.1.0` | `Local.LivingWaters` | `OzelModlar/LivingWaters.zip` | Sulara balık salma, canlı balık popülasyonu/üreme/göç sistemi, HUD & Su Günlüğü ve **Visible Fish** canlı Harmony entegrasyonu (`shekurika.WaterFish` opsiyonel). |
-| Live State Exporter | `1.4.0` | `Local.LiveStateExporter` | `OzelModlar/LiveStateExporter.zip` | Save dosyalarına dokunmadan güncel oyun durumunu (`live_summary.md`, `live_chests.md`, `live_cc.md`, `live_social.md`, `live_fish.md`) dışa aktarır. |
+| Canlı Sular (Living Waters) | `1.1.0` | `Local.LivingWaters` | `OzelModlar/LivingWaters.zip` | Sulara balık salma, canlı balık popülasyonu/üreme/göç sistemi, `LivingWatersLogs` kalıcı denetim günlüğü, HUD & Su Günlüğü ve **Visible Fish** canlı Harmony entegrasyonu (`shekurika.WaterFish` opsiyonel). |
+| Live State Exporter | `1.4.0` | `Local.LiveStateExporter` | `OzelModlar/LiveStateExporter.zip` | Save dosyalarına dokunmadan güncel oyun durumunu (`live_summary.md`, `live_chests.md`, `live_cc.md`, `live_social.md`, `live_fish.md`, `live_world.md`) kurallı ve önbellekli dışa aktarır (`advisor_rules.json` dahil). |
+| Native Stardew Cursor | `1.0.0` | `Local.NativeStardewCursor` | `OzelModlar/NativeStardewCursor.zip` | Stardew'un tüm dünya/menü imleçlerini gerçek monitör yenileme hızında (ör. 300Hz) yerel OS donanım imleci olarak sıfır gecikmeyle çizer. |
+| Happy Birthday Cache Lag Fix | `1.0.0` | `Local.HappyBirthdayLagFix` | `OzelModlar/HappyBirthdayLagFix.zip` | `Happy Birthday` modunun Content Patcher hediye token'larını günde 1 kez önbellekleyerek her 10 oyun dakikasında bir tüm mod asset önbelleğinin sıfırlanmasını ve FPS droplarını önler. |
 | Mute On Focus Loss | `1.0.0` | `Antigravity.MuteOnFocusLoss` | `OzelModlar/MuteOnFocusLoss.zip` | Alt-Tab yapıldığında (pencere odak kaybettiğinde) tüm oyun seslerini ve müziği otomatik susturur, geri dönünce eski seviyesine getirir. |
 | Luck Tooltip Enhancer | `1.0.0` | `Local.LuckTooltipEnhancer` | `OzelModlar/LuckTooltipEnhancer.zip` | **UI Info Suite 2 Alternative** (`DazUki.UIInfoSuite2Alt` gerekli) şans ikonuna 0–100% şans yüzdesi, kesin değer ve min/max aralığı ekler. |
 
-- Toplu kurulum paketi: `OzelModlar/OzelModlar-Tumu.zip` (4 özel modun tamamı).
+- Toplu kurulum paketi: `OzelModlar/OzelModlar-Tumu.zip` (6 özel modun tamamı).
 
 ## Değiştirilen / Yamalanan Mevcut Modlar (`DegistirilenModlar/`)
 

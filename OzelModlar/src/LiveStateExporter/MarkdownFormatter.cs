@@ -23,6 +23,21 @@ internal sealed record CropEntry(
     Dictionary<string, int> Fertilizers,
     string HarvestItemId = "");
 
+internal sealed record CropProfitEntry(
+    string CropName,
+    string SeedName,
+    string SourceTag,
+    string ShopSource,
+    int SeedPrice,
+    int SellPrice,
+    int GrowthDays,
+    int RegrowDays,
+    double ExpectedYield,
+    int HarvestsInSeason,
+    double NetProfitInSeason,
+    double ProfitPerDay,
+    int OwnedSeedCount);
+
 internal sealed record FruitTreeEntry(
     string Location,
     string Tree,
@@ -71,7 +86,9 @@ internal sealed record BuildingEntry(
     JunimoHutEntry? JunimoHut = null,
     SlimeHutchEntry? SlimeHutch = null,
     int HayInTrough = 0,
-    bool AnimalDoorOpen = false);
+    bool AnimalDoorOpen = false,
+    int DaysUntilUpgrade = 0,
+    string? UpgradeTarget = null);
 
 internal sealed record FishPondEntry(
     string FishType,
@@ -219,6 +236,7 @@ internal sealed class LiveStateSnapshot
     public int HayInSilos { get; init; }
     public int HayCapacity { get; init; }
     public List<CropEntry> Crops { get; init; } = new();
+    public List<CropProfitEntry> TopProfitableCrops { get; init; } = new();
     public List<FruitTreeEntry> FruitTrees { get; init; } = new();
     public List<FarmSpotEntry> FarmForageSpots { get; init; } = new();
     public List<BuildingEntry> Buildings { get; init; } = new();
@@ -242,6 +260,7 @@ internal sealed class LiveStateSnapshot
     public List<SpecialOrderEntry> SpecialOrders { get; init; } = new();
     public List<FriendshipEntry> Friendships { get; init; } = new();
     public FishGuideSnapshot? FishGuide { get; init; }
+    public WorldIntelligenceSnapshot? WorldIntel { get; init; }
 }
 
 internal static class MarkdownFormatter
@@ -251,6 +270,7 @@ internal static class MarkdownFormatter
         return new Dictionary<string, string>
         {
             ["live_summary.md"] = FormatSummary(s),
+            ["live_world.md"] = FormatWorldAlmanac(s),
             ["live_chests.md"] = FormatChests(s),
             ["live_cc.md"] = FormatCommunityCenter(s),
             ["live_social.md"] = FormatSocial(s),
@@ -281,13 +301,22 @@ internal static class MarkdownFormatter
         // Farmer Core
         sb.AppendLine($"- **Money:** {s.Money:N0}g (Total: {s.TotalMoneyEarned:N0}g) | **Stamina:** {s.Stamina}/{s.MaxStamina} | **HP:** {s.Health}/{s.MaxHealth}");
         string houseUpgrading = s.DaysUntilHouseUpgrade > 0 ? $" (+{s.DaysUntilHouseUpgrade}d)" : "";
-        sb.AppendLine($"- **Luck:** {s.DailyLuck:0.###} (Lv.{s.LuckLevel}) | **Mine:** {s.DeepestMineLevel} | **Museum:** {s.MuseumDonatedCount} | **Stardrops:** {s.StardropsFound} | **House:** Lv.{s.HouseUpgradeLevel}{houseUpgrading}");
+        string houseTier = s.HouseUpgradeLevel switch
+        {
+            0 => "Başlangıç",
+            1 => "Mutfak",
+            2 => "Çocuk Odası",
+            _ => "Mahzen"
+        };
+        sb.AppendLine($"- **Luck:** {s.DailyLuck:0.###} (Lv.{s.LuckLevel}) | **Mine:** {s.DeepestMineLevel} | **Museum:** {s.MuseumDonatedCount} | **Stardrops:** {s.StardropsFound} | **House:** Lv.{s.HouseUpgradeLevel} ({houseTier}){houseUpgrading}");
         string masteryDetail = s.UnlockedMasteries.Count > 0 ? $" [{string.Join(", ", s.UnlockedMasteries)}]" : "";
         sb.AppendLine($"- **Mastery:** Lv.{s.MasteryLevel} (XP: {s.MasteryExp:N0}, Spent: {s.MasteryLevelsSpent}){masteryDetail}");
         if (s.GoldenWalnutsFound > 0 || s.GoldenWalnuts > 0 || s.QiGems > 0)
             sb.AppendLine($"- **Ginger Island:** Walnuts {s.GoldenWalnutsFound} (held: {s.GoldenWalnuts}) | **QiGems:** {s.QiGems}");
         sb.AppendLine($"- **Skills:** Farm {s.Skills.Farming}, Mine {s.Skills.Mining}, Combat {s.Skills.Combat}, Foraging {s.Skills.Foraging}, Fish {s.Skills.Fishing}"
             + (s.Professions.Count > 0 ? $" | Professions: [{string.Join(", ", s.Professions.Select(FormatProfession))}]" : ""));
+        if (s.WorldIntel is { CustomSkills.Count: > 0 } wiSkills)
+            sb.AppendLine($"- **Custom Mod Skills:** {string.Join(", ", wiSkills.CustomSkills.Select(cs => $"{cs.Name} {cs.Level}"))}");
 
         var toolParts = new List<string>();
         if (s.AxeLevel >= 0) toolParts.Add($"Axe: {FormatToolTier(s.AxeLevel)}");
@@ -342,6 +371,23 @@ internal static class MarkdownFormatter
         }
         if (s.MuseumReadyToDonate.Count > 0)
             sb.AppendLine($"- **Museum Ready to Donate:** {string.Join(", ", s.MuseumReadyToDonate)}");
+        if (s.WorldIntel is { } wiPulse)
+        {
+            int readyToday = wiPulse.ReadyEvents.Count(e => e.LiveStatus is "ŞU AN TETİKLENEBİLİR" or "BUGÜN DAHA SONRA");
+            int openOrders = wiPulse.AvailableSpecialOrders.Count(o => !o.BoardAlreadyAcceptedToday);
+            int obtainedStardrops = wiPulse.Stardrops.Count(st => st.Obtained);
+            var pulseParts = new List<string>
+            {
+                $"Hazır Etkinlik: {readyToday} bugün / {wiPulse.ReadyEvents.Count} toplam",
+                $"Açık Pano Görevi: {openOrders}",
+                $"Yıldıztohumu: {obtainedStardrops}/{wiPulse.Stardrops.Count}"
+            };
+            if (wiPulse.GeodeBacklogCount > 0)
+                pulseParts.Add($"Kırılacak Jeot/Kutu: {wiPulse.GeodeBacklogCount}");
+            if (wiPulse.ModHighlights.Count > 0)
+                pulseParts.Add($"Aktif Mod Ekosistemi: {string.Join(", ", wiPulse.ModHighlights.Select(m => m.ModName))}");
+            sb.AppendLine($"- **World & Mod Pulse (detaylar -> live_world.md):** {string.Join(" | ", pulseParts)}");
+        }
 
         // Categorized Action Sections (Top-Priority Briefing)
         sb.AppendLine();
@@ -361,7 +407,7 @@ internal static class MarkdownFormatter
                 sb.AppendLine($"- {line}");
 
         sb.AppendLine();
-        sb.AppendLine("## 3. Uzun Vadeli Stratejik Yatırımlar (Bugün Yaparsan İleride Çok İşine Yarar)");
+        sb.AppendLine("## 3. Geniş Vizyon: Hikâye, Karakterler, Harita ve Mod Fırsatları (Detaylar: live_world.md)");
         if (s.StrategicInsights.Count == 0)
             sb.AppendLine("- Mevcut aşama için ek uzun vadeli öneri yok.");
         else
@@ -428,7 +474,15 @@ internal static class MarkdownFormatter
             sb.AppendLine("- **Buildings:**");
             foreach (var b in s.Buildings)
             {
-                string buildNote = b.DaysOfConstructionLeft > 0 ? $" (building: {b.DaysOfConstructionLeft}d)" : "";
+                var buildParts = new List<string>();
+                if (b.DaysOfConstructionLeft > 0)
+                    buildParts.Add($"building: {b.DaysOfConstructionLeft}d");
+                if (b.DaysUntilUpgrade > 0)
+                {
+                    string target = !string.IsNullOrWhiteSpace(b.UpgradeTarget) ? $" -> {b.UpgradeTarget}" : "";
+                    buildParts.Add($"upgrading{target}: {b.DaysUntilUpgrade}d");
+                }
+                string buildNote = buildParts.Count > 0 ? $" ({string.Join(", ", buildParts)})" : "";
                 if (b.FishPond is { } fp)
                 {
                     string extra = !string.IsNullOrEmpty(fp.NeededItem) ? $", needs {fp.NeededItem} x{fp.NeededCount}" : "";
@@ -487,6 +541,21 @@ internal static class MarkdownFormatter
                 string stock = t.Stock > 1 && t.Stock < int.MaxValue ? $" x{t.Stock}" : "";
                 return $"{label}{stock} ({t.Price:N0}g)";
             })));
+        }
+
+        if (s.TopProfitableCrops.Count > 0)
+        {
+            sb.AppendLine();
+            sb.AppendLine($"## Profitable Crops This Season ({s.Season}, {s.DaysLeftInSeason}d left)");
+            foreach (var p in s.TopProfitableCrops)
+            {
+                string growInfo = p.RegrowDays > 0
+                    ? $"{p.GrowthDays}d + {p.RegrowDays}d regrow"
+                    : $"{p.GrowthDays}d";
+                string yieldInfo = p.ExpectedYield > 1.05 ? $" | yield ~{p.ExpectedYield:0.1}" : "";
+                string ownedInfo = p.OwnedSeedCount > 0 ? $" | owned: x{p.OwnedSeedCount}" : "";
+                sb.AppendLine($"- **{p.CropName}** [{p.SourceTag}] | {p.ProfitPerDay:0.1}g/day | net {p.NetProfitInSeason:N0}g ({p.HarvestsInSeason}x harvest) | seed {p.SeedPrice}g ({p.ShopSource}) -> sell {p.SellPrice}g | {growInfo}{yieldInfo}{ownedInfo}");
+            }
         }
 
         if (s.UnvisitedKeyAreas.Count > 0 || s.WorldForage.Count > 0)
@@ -609,10 +678,40 @@ internal static class MarkdownFormatter
 
     private static string FormatSocial(LiveStateSnapshot s)
     {
-        var sb = new StringBuilder(1024);
-        sb.AppendLine($"# Friendships & Animals ({s.FarmName})");
+        var sb = new StringBuilder(2048);
+        sb.AppendLine($"# Friendships, Gifts & Animals ({s.FarmName})");
         sb.AppendLine($"exportedAt: {s.ExportedAt}");
         sb.AppendLine();
+
+        if (s.WorldIntel is { BirthdayGifts.Count: > 0 } wiBday)
+        {
+            sb.AppendLine("## Yaklaşan Doğum Günleri ve Sandıktaki Hazır Hediyeler");
+            foreach (var b in wiBday.BirthdayGifts)
+            {
+                string when = b.DaysUntil == 0 ? "BUGÜN" : $"+{b.DaysUntil}g";
+                string gifted = b.DaysUntil == 0 ? (b.GiftedToday ? " [Hediye Verildi]" : " [HEDİYE VERİLMEDİ]") : "";
+                string loc = !string.IsNullOrWhiteSpace(b.CurrentLocation) ? $" | Konum: {b.CurrentLocation}" : "";
+                string gifts = b.OwnedLovedGifts.Count > 0
+                    ? $"Sevdiği (Sandıkta): {string.Join(", ", b.OwnedLovedGifts)}"
+                    : (b.OwnedLikedGifts.Count > 0 ? $"Beğendiği (Sandıkta): {string.Join(", ", b.OwnedLikedGifts)}" : "Sandıkta eşleşen özel hediye bulunamadı");
+                sb.AppendLine($"- **{b.DisplayName}** ({when}, {b.CurrentHearts}♥{gifted}){loc} -> {gifts}");
+            }
+            sb.AppendLine();
+        }
+
+        if (s.WorldIntel is { NpcMilestones.Count: > 0 } wiNpc)
+        {
+            sb.AppendLine("## Öncelikli Karakter Hedefleri (Tarif / Hikâye / Kilit Açanlar)");
+            foreach (var n in wiNpc.NpcMilestones)
+            {
+                string loc = !string.IsNullOrWhiteSpace(n.CurrentLocation) ? $" | Konum: {n.CurrentLocation}" : "";
+                string gifts = n.OwnedLovedGifts.Count > 0
+                    ? $" | Sevdiği (Sandıkta): {string.Join(", ", n.OwnedLovedGifts)}"
+                    : (n.OwnedLikedGifts.Count > 0 ? $" | Beğendiği: {string.Join(", ", n.OwnedLikedGifts)}" : "");
+                sb.AppendLine($"- **{n.DisplayName}** ({n.CurrentHearts}♥ -> {n.TargetHearts}♥, ~{n.PointsNeeded} puan){loc}: {string.Join("; ", n.Unlocks)}{gifts}");
+            }
+            sb.AppendLine();
+        }
 
         sb.AppendLine($"## Friendships ({s.Friendships.Count})");
         if (s.Friendships.Count == 0)
@@ -934,6 +1033,141 @@ internal static class MarkdownFormatter
             extras.Add($"GSQ: {sp.ExtraCondition}");
 
         return $"[{sp.LiveStatus}] **{sp.LocationDisplayName}** (`{sp.LocationKey}`){area} | {string.Join(" | ", extras)}";
+    }
+
+    private static string FormatWorldAlmanac(LiveStateSnapshot s)
+    {
+        var sb = new StringBuilder(4096);
+        sb.AppendLine($"# World, Events, Quests & Mod Ecosystem Almanac ({s.FarmName} - {s.FarmerName})");
+        sb.AppendLine($"exportedAt: {s.ExportedAt} | Y{s.Year} {s.Season} {s.DayOfMonth} ({FormatTime(s.TimeOfDay)}) | Money: {s.Money:N0}g");
+        sb.AppendLine();
+
+        var wi = s.WorldIntel;
+        if (wi is null)
+        {
+            sb.AppendLine("No world intelligence snapshot available.");
+            return sb.ToString();
+        }
+
+        // 1. Installed Mod Ecosystem & Active Mod Opportunities
+        sb.AppendLine($"## 1. Yüklü Mod Ekosistemi ve Aktif Fırsatlar ({wi.ModHighlights.Count})");
+        if (wi.ModHighlights.Count == 0)
+        {
+            sb.AppendLine("- Ek büyük içerik/oynanış modu tespit edilmedi.");
+        }
+        else
+        {
+            foreach (var m in wi.ModHighlights)
+                sb.AppendLine($"- **{m.ModName}** [{m.Category}] — {m.StatusSummary} | *Öneri:* {m.ActionableTip}");
+        }
+        if (wi.CustomSkills.Count > 0)
+            sb.AppendLine($"- **Özel Mod Becerileri:** {string.Join(", ", wi.CustomSkills.Select(cs => $"{cs.Name} Sv.{cs.Level}"))}");
+        sb.AppendLine();
+
+        // 2. Triggerable & Upcoming Heart / Story Events (Vanilla + Mods)
+        sb.AppendLine($"## 2. Tetiklenmeye Hazır Hikâye & Kalp Etkinlikleri ({wi.ReadyEvents.Count})");
+        if (wi.ReadyEvents.Count == 0)
+        {
+            sb.AppendLine("- Şu an tetiklenmeye hazır görülmemiş etkinlik tespit edilmedi.");
+        }
+        else
+        {
+            foreach (var ev in wi.ReadyEvents)
+            {
+                string modTag = ev.IsModEvent ? " [Mod]" : "";
+                string extra = !string.IsNullOrWhiteSpace(ev.ExtraNote) ? $" | Şart: {ev.ExtraNote}" : "";
+                sb.AppendLine($"- **[{ev.LiveStatus}] {ev.LocationDisplayName}**{modTag} -> {ev.NpcSummary} | Saat: {ev.TimeWindow} | Hava: {ev.WeatherNote}{extra}");
+            }
+        }
+        sb.AppendLine();
+
+        if (wi.UpcomingEvents.Count > 0)
+        {
+            sb.AppendLine($"## 2b. Yaklaşan Kalp Etkinlikleri (1–2 Kalp Kaldı: {wi.UpcomingEvents.Count})");
+            foreach (var ev in wi.UpcomingEvents)
+            {
+                string modTag = ev.IsModEvent ? " [Mod]" : "";
+                sb.AppendLine($"- **{ev.NpcSummary}** ({ev.LiveStatus}){modTag} -> {ev.LocationDisplayName} ({ev.TimeWindow}, {ev.WeatherNote})");
+            }
+            sb.AppendLine();
+        }
+
+        // 3. Untaken Quest Boards (Daily Help Wanted, Town, Ridgeside, Qi)
+        sb.AppendLine("## 3. Açık Görev Panoları (Günlük İlan & Özel Siparişler)");
+        if (wi.DailyHelpWanted is { } hw)
+        {
+            string acc = hw.AlreadyAccepted ? "Kabul edildi" : "HENÜZ ALINMADI";
+            string itemHint = hw.HasTargetItemInStorage ? $" | SANDIKTA HAZIR: {hw.StorageSources}" : "";
+            sb.AppendLine($"- **Pierre Önü Günlük İlan ({acc}):** {hw.Title} — {hw.Objective}{itemHint}");
+        }
+        else
+        {
+            sb.AppendLine("- Pierre önü günlük ilanı bugün boş.");
+        }
+
+        if (wi.AvailableSpecialOrders.Count == 0)
+        {
+            sb.AppendLine("- Panolarda bekleyen açık özel sipariş tespit edilmedi.");
+        }
+        else
+        {
+            foreach (var o in wi.AvailableSpecialOrders)
+            {
+                string state = o.BoardAlreadyAcceptedToday ? "Bu panodan bu hafta alındı" : "AÇIK — ALINABİLİR";
+                string req = !string.IsNullOrWhiteSpace(o.Requester) ? $" ({o.Requester})" : "";
+                sb.AppendLine($"- **{o.BoardLabel}** [{state}]: **{o.Name}**{req} ({o.DurationText}) — {o.Description}");
+            }
+        }
+        sb.AppendLine();
+
+        // 4. Major Progression Gates & Stardrops
+        sb.AppendLine($"## 4. Büyük İlerleme Kilitleri ve Yıldıztohumları ({wi.ProgressionGates.Count})");
+        foreach (var g in wi.ProgressionGates)
+            sb.AppendLine($"- **[{g.Category}] {g.Title}** ({g.Progress}): {g.NextStep}");
+        sb.AppendLine();
+
+        int foundDrops = wi.Stardrops.Count(x => x.Obtained);
+        sb.AppendLine($"### Yıldıztohumları Kontrol Listesi ({foundDrops}/{wi.Stardrops.Count})");
+        foreach (var st in wi.Stardrops)
+        {
+            string mark = st.Obtained ? "[ALINDI]" : "[EKSİK]";
+            sb.AppendLine($"- {mark} **{st.Name}:** {st.HowToGet}");
+        }
+        sb.AppendLine();
+
+        // 5. Equipment, Geodes, Unbuilt Buildings & Uncrafted Machines
+        sb.AppendLine("## 5. Ekipman, Jeot Stoğu, İnşa Edilmemiş Binalar ve Makineler");
+        if (wi.GeodeBacklogCount > 0)
+            sb.AppendLine($"- **Kırılmayı Bekleyen Jeot / Kutu ({wi.GeodeBacklogCount}):** {wi.GeodeBacklogSummary}");
+        foreach (string alert in wi.EquipmentAlerts)
+            sb.AppendLine($"- **Ekipman:** {alert}");
+        if (wi.UnbuiltKeyBuildings.Count > 0)
+        {
+            sb.AppendLine("- **İnşa Edilmemiş Önemli Binalar:**");
+            foreach (string b in wi.UnbuiltKeyBuildings)
+                sb.AppendLine($"  - {b}");
+        }
+        if (wi.UncraftedKnownMachines.Count > 0)
+        {
+            sb.AppendLine("- **Tarifi Bilinen Ama Henüz Kurulmamış Faydalı Makineler:**");
+            foreach (string m in wi.UncraftedKnownMachines)
+                sb.AppendLine($"  - {m}");
+        }
+        sb.AppendLine();
+
+        // 6. Bookseller Stock (if in town today)
+        if (wi.BooksellerStock.Count > 0)
+        {
+            sb.AppendLine($"## 6. Bugünkü Kitapçı Stoku ({wi.BooksellerStock.Count})");
+            foreach (var bk in wi.BooksellerStock)
+            {
+                string tag = bk.AlreadyRead ? "[Okundu]" : "[YENİ / OKUNMADI]";
+                sb.AppendLine($"- {tag} **{bk.DisplayName}** ({bk.Price:N0}g)");
+            }
+            sb.AppendLine();
+        }
+
+        return sb.ToString();
     }
 
     private static string TranslateWeather(string w) => w.ToLowerInvariant() switch

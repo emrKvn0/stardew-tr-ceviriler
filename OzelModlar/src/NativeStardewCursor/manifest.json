@@ -1,0 +1,10 @@
+{
+  "Name": "Native Stardew Cursor",
+  "Author": "Local",
+  "Version": "1.0.0",
+  "Description": "Renders Stardew Valley's custom cursor icons as native OS hardware cursors so the pointer runs at full monitor refresh rate (e.g. 300Hz) with zero input lag while keeping the game at 60 FPS.",
+  "UniqueID": "Local.NativeStardewCursor",
+  "EntryDll": "NativeStardewCursor.dll",
+  "MinimumApiVersion": "4.0.0",
+  "UpdateKeys": []
+}

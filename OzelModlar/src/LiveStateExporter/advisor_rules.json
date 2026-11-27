@@ -1,0 +1,369 @@
+{
+  "version": 1,
+  "rules": [
+    {
+      "id": "must_rare_seed_fall_urgent",
+      "enabled": true,
+      "target": "mustDo",
+      "priority": 10,
+      "message": "Ender Tohum Fırsatı (BUGÜN EK!): Sandıkta/envanterde {rareSeedCount} adet Ender Tohum var. 24 günde büyür ve YALNIZCA Güz'de yetişir; bugün ekersen Gizli Orman heykelinden kalıcı +34 Enerji (Yıldıztohumu) alırsın!",
+      "allOf": ["season == fall", "daysLeftInSeason >= 24", "rareSeedCount > 0"]
+    },
+    {
+      "id": "must_fall_fair_stardrop",
+      "enabled": true,
+      "target": "mustDo",
+      "priority": 12,
+      "message": "Bugün Stardew Valley Fuarı (Güz 16): Ödül tezgâhından 2.000 Yıldız Jetonu ile kalıcı +34 Enerji (Yıldıztohumu) almayı unutma!",
+      "allOf": ["season == fall", "day == 16", "!flag:CF_Fair"]
+    },
+    {
+      "id": "must_geode_backlog_sve",
+      "enabled": true,
+      "target": "mustDo",
+      "priority": 25,
+      "message": "Kırılmayı Bekleyen Jeot/Kutu ({geodeBacklog}): {geodeSummary} — Clint'te kırdırıp Müze ({museumCount} bağış) ve maden ödüllerini alabilirsin (SVE'de Paslı Anahtar'ı Günther değil Marlon verir).",
+      "allOf": ["mod:FlashShifter.SVECode", "geodeBacklog >= 5"]
+    },
+    {
+      "id": "must_geode_backlog_vanilla",
+      "enabled": true,
+      "target": "mustDo",
+      "priority": 25,
+      "message": "Müze/Kanalizasyon Fırsatı ({museumCount}/60): Sandıklarda {geodeBacklog} kırılacak jeot/kutu var ({geodeSummary}) — Clint'te kırdırmak Krobus ve Kanalizasyon'u erken açabilir!",
+      "allOf": ["!mod:FlashShifter.SVECode", "!hasRustyKey", "museumCount >= 45", "geodeBacklog >= 5"]
+    },
+    {
+      "id": "gate_sve_marlon_rusty_key_ready_y2",
+      "enabled": true,
+      "target": "gate",
+      "priority": 10,
+      "category": "Ana Kilit (SVE)",
+      "title": "Paslı Anahtar (Marlon) -> Kanalizasyon, Krobus & Büyücü Binaları",
+      "progress": "Marlon {marlonHearts}/5♥ | Maden 120: Tamam | Yıl {year}",
+      "message": "SVE'de Paslı Anahtar'ı Günther değil MARLON verir! Yıl 2 + Maden 120 şartın tamam — festival olmayan bir günde Maceracı Zirvesi'ne (Lonca dışı) giderek Kanalizasyon & Krobus kilidini hemen aç!",
+      "allOf": ["mod:FlashShifter.SVECode", "!hasRustyKey", "year >= 2", "deepestMine >= 120"]
+    },
+    {
+      "id": "gate_sve_marlon_rusty_key_y1",
+      "enabled": true,
+      "target": "gate",
+      "priority": 10,
+      "category": "Ana Kilit (SVE)",
+      "title": "Paslı Anahtar (Marlon) -> Kanalizasyon, Krobus & Büyücü Binaları",
+      "progress": "Marlon {marlonHearts}/5♥ | Maden {deepestMine}/120 | Yıl {year}",
+      "message": "SVE'de Paslı Anahtar'ı Günther 60 bağışta VERMEZ; MARLON verir! İki yol var: (1) Yıl 1'de erken açmak için Marlon'u 5♥ yap (şu an {marlonHearts}♥) ve Maceracı Zirvesi'ne git, veya (2) Yıl 2 Bahar 1'de Maden 120 bitmişken Maceracı Zirvesi'ne giderek kalpsiz otomatik aç!",
+      "allOf": ["mod:FlashShifter.SVECode", "!hasRustyKey", "year == 1"]
+    },
+    {
+      "id": "gate_vanilla_gunther_rusty_key",
+      "enabled": true,
+      "target": "gate",
+      "priority": 10,
+      "category": "Ana Kilit",
+      "title": "Müze 60 Bağış -> Kanalizasyon, Krobus & Büyücü Binaları",
+      "progress": "{museumCount}/60 bağış",
+      "message": "60 bağışa ulaşınca Paslı Anahtar açılır -> Kanalizasyon (Krobus, Yıldıztohumu, İridyum Fıskiye) ve ardından Büyücü'nün Karanlık Tılsım göreviyle Junimo Kulübesi / Dikilitaşlar açılır.",
+      "allOf": ["!mod:FlashShifter.SVECode", "!hasRustyKey"]
+    },
+    {
+      "id": "gate_dark_talisman",
+      "enabled": true,
+      "target": "gate",
+      "priority": 15,
+      "category": "Ana Kilit",
+      "title": "Karanlık Tılsım -> Cadı Bataklığı & Büyücü Binaları",
+      "progress": "Paslı Anahtar açık, Karanlık Tılsım bekleniyor",
+      "message": "Demiryolu'na gidip Büyücü'nün Karanlık Tılsım görevini tamamla -> Junimo Kulübesi ve Dikilitaşlar açılır!",
+      "allOf": ["hasRustyKey", "!hasMagicInk", "!flag:hasMagicInk"]
+    },
+    {
+      "id": "gate_mysterious_qi",
+      "enabled": true,
+      "target": "gate",
+      "priority": 20,
+      "category": "Gizli Görev Zinciri",
+      "title": "Bay Qi'nin Gizemi (Kumarhane Kartı)",
+      "progress": "Henüz açılmadı (Çöl açık)",
+      "message": "Otobüs Tüneli'ndeki kilitli kutuya 1 Pil Paketi koyarak Bay Qi'nin gizli görev zincirini başlat (Pil Paketi -> Gökkuşağı Kabuğu -> 10 Pancar -> Güneş Özü -> Kumarhane Kartı).",
+      "allOf": ["desertUnlocked", "!hasClubCard"]
+    },
+    {
+      "id": "gate_fall_fair_countdown",
+      "enabled": true,
+      "target": "gate",
+      "priority": 25,
+      "category": "Kalıcı Enerji (+34)",
+      "title": "Yıldıztohumu: Güz 16 Fuarı",
+      "progress": "{stardropsFound}/7 Yıldıztohumu | {daysUntilFallFair} gün kaldı",
+      "message": "Güz 16 Fuarı'na {daysUntilFallFair} gün kaldı: 9 yüksek kaliteli ürün sergisi ve çark/oltalama ile 2.000 jeton toplayıp kalıcı +34 Enerji Yıldıztohumu'nu al!",
+      "allOf": ["season == fall", "daysUntilFallFair >= 1", "!flag:CF_Fair"]
+    },
+    {
+      "id": "gate_magnifying_glass",
+      "enabled": true,
+      "target": "gate",
+      "priority": 30,
+      "category": "Gizli İçerik",
+      "title": "Büyüteç & Gizli Notlar",
+      "progress": "Henüz açılmadı",
+      "message": "Kış 1'de Otobüs Durağı'ndan kasabaya yürüyünce Gölgeli Figür etkinliği başlar -> Büyüteç ile Gizli Notlar ve Özel Tılsım (+0.025 kalıcı şans) açılır.",
+      "allOf": ["!hasMagnifyingGlass"]
+    },
+    {
+      "id": "gate_special_charm",
+      "enabled": true,
+      "target": "gate",
+      "priority": 32,
+      "category": "Kalıcı Güç",
+      "title": "Özel Tılsım (+0.025 Kalıcı Şans)",
+      "progress": "Büyüteç var, Özel Tılsım alınmadı",
+      "message": "JojaMarket yanındaki kamyon şoförüne 1 Tavşan Ayağı vererek kalıcı şans artışı kazanabilirsin (Gizli Not #20).",
+      "allOf": ["hasMagnifyingGlass", "!hasSpecialCharm"]
+    },
+    {
+      "id": "gate_ginger_island_boat",
+      "enabled": true,
+      "target": "gate",
+      "priority": 35,
+      "category": "Yeni Dünya",
+      "title": "Zencefil Adası Teknesi",
+      "progress": "Halkevi tamamlandı, tekne tamir edilmedi",
+      "message": "Willy'nin arka odasındaki tekneyi (200 Kereste + 5 İridyum Külçesi + 5 Pil Paketi) tamir edip Zencefil Adası'nı aç!",
+      "allOf": ["ccCompletedAll", "!islandUnlocked"]
+    },
+    {
+      "id": "gate_stable_mobility",
+      "enabled": true,
+      "target": "gate",
+      "priority": 40,
+      "category": "Hareket & Zaman",
+      "title": "At Ahırı (At)",
+      "progress": "Henüz inşa edilmedi",
+      "message": "Bu kadar geniş haritada yürümek yerine Robin'den At Ahırı (10.000g + 100 Kereste + 5 Demir Külçesi) kurmak her gün saatler kazandırır!",
+      "allOf": ["!building:Stable"]
+    },
+    {
+      "id": "gate_skull_cavern_elevator",
+      "enabled": true,
+      "target": "gate",
+      "priority": 45,
+      "category": "Maden & İridyum",
+      "title": "Kafatası Mağarası (Asansör Modlu)",
+      "progress": "En derin kat: {skullCavernFloor} (sonraki durak: {nextElevatorFloor})",
+      "message": "Asansör modun olduğu için her 5 katta kalıcı durak açılır; 50+ katlarda İridyum ve Prizma Parçası bolluğundan rahatça yararlanabilirsin.",
+      "allOf": ["desertUnlocked", "mod:SkullCavernElevator"]
+    },
+    {
+      "id": "gate_skull_cavern_vanilla",
+      "enabled": true,
+      "target": "gate",
+      "priority": 45,
+      "category": "Maden & İridyum",
+      "title": "Kafatası Mağarası",
+      "progress": "En derin kat: {skullCavernFloor}",
+      "message": "İyi şans günlerinde bomba ve Yeşim -> Merdiven takasıyla 100. kata inip Bay Qi'nin kalıcı +25 Can ödülünü al.",
+      "allOf": ["desertUnlocked", "!mod:SkullCavernElevator"]
+    },
+    {
+      "id": "mod_sve_ecosystem",
+      "enabled": true,
+      "target": "modHighlight",
+      "priority": 10,
+      "category": "Genişleme",
+      "title": "Stardew Valley Expanded",
+      "progress": "SVE keşif: {sveVisitedCount}/{sveHubCount} bölge ziyaret edildi",
+      "message": "{sveTip}",
+      "allOf": ["mod:FlashShifter.SVECode"]
+    },
+    {
+      "id": "mod_ridgside_ecosystem",
+      "enabled": true,
+      "target": "modHighlight",
+      "priority": 20,
+      "category": "Genişleme",
+      "title": "Ridgeside Village",
+      "progress": "{rsvProgress}",
+      "message": "{rsvTip}",
+      "allOf": ["mod:Rafseazz.RidgesideVillage"]
+    },
+    {
+      "id": "mod_east_scarp_sns",
+      "enabled": true,
+      "target": "modHighlight",
+      "priority": 30,
+      "category": "Genişleme",
+      "title": "East Scarp & Kılıç ve Büyü",
+      "progress": "{esProgress}",
+      "message": "Kasabanın doğusundan Doğu Yamacı'na geçip Mateo, Hector, Cirrus (Kılıç ve Büyü sınıf becerileri), Sen (Karanlıkta Gizlenen) ve Rosa/Jacob/Eloise hikâyelerini ilerletebilirsin.",
+      "anyOf": ["mod:atravita.EastScarp", "mod:KCC.SnS", "mod:DN.SnS"]
+    },
+    {
+      "id": "mod_solarium",
+      "enabled": true,
+      "target": "modHighlight",
+      "priority": 40,
+      "category": "Harita / Sera",
+      "title": "Kaplıca Solaryumu",
+      "progress": "{solariumProgress}",
+      "message": "{solariumTip}",
+      "allOf": ["mod:jennajuffuffles.SpaSolariumRevisited"]
+    },
+    {
+      "id": "mod_additional_farm_cave",
+      "enabled": true,
+      "target": "modHighlight",
+      "priority": 50,
+      "category": "Harita",
+      "title": "Ek Çiftlik Mağarası",
+      "progress": "{addCaveProgress}",
+      "message": "{addCaveTip}",
+      "allOf": ["mod:Tikamin557.CP.AdditionalFarmCave"]
+    },
+    {
+      "id": "mod_downhill_bundles",
+      "enabled": true,
+      "target": "modHighlight",
+      "priority": 60,
+      "category": "Genişleme",
+      "title": "Yokuş Aşağı & Açılabilir Yığınlar",
+      "progress": "{downhillProgress}",
+      "message": "Haritada Halkevi dışında modların eklediği özel açılabilir yığınlar ve Yokuş Aşağı Projesi görev alanları bulunuyor; keşfettiğin bölgelerdeki tabela/sandık etkileşimlerini kontrol et.",
+      "anyOf": ["mod:DH.Kiyuga.Main", "mod:DLX.Bundles"]
+    },
+    {
+      "id": "mod_automate_status",
+      "enabled": true,
+      "target": "modHighlight",
+      "priority": 70,
+      "category": "Oynanış",
+      "title": "Otomasyon (Automate)",
+      "progress": "{automateProgress}",
+      "message": "{automateTip}",
+      "allOf": ["mod:Pathoschild.Automate"]
+    },
+    {
+      "id": "mod_skull_elevator",
+      "enabled": true,
+      "target": "modHighlight",
+      "priority": 80,
+      "category": "Maden",
+      "title": "Kafatası Mağarası Asansörü",
+      "progress": "En derin kat: {skullCavernFloor} (sonraki durak: {nextElevatorFloor})",
+      "message": "Tek seferde 100 merdiven biriktirmene gerek yok; her gidişte 5–10 kat inerek kalıcı asansör durakları açıp İridyum/Prizma Parçası kasabilirsin.",
+      "allOf": ["mod:SkullCavernElevator"]
+    },
+    {
+      "id": "mod_tractor_garage",
+      "enabled": true,
+      "target": "modHighlight",
+      "priority": 90,
+      "category": "Çiftlik",
+      "title": "Traktör Modu",
+      "progress": "Traktör Garajı henüz inşa edilmedi (ekili alan: {plantedCrops} ekin)",
+      "message": "Tarla büyüdükçe ve bütçe uygun olduğunda Robin'den Traktör Garajı kurmak ekim, gübreleme, hasat ve arazi temizliğini saniyelere indirir.",
+      "allOf": ["mod:Pathoschild.TractorMod", "!building:TractorGarage"]
+    },
+    {
+      "id": "mod_bigger_backpack",
+      "enabled": true,
+      "target": "modHighlight",
+      "priority": 95,
+      "category": "Ekipman",
+      "title": "Büyük Sırt Çantası",
+      "progress": "Mevcut çanta: {maxBagSlots}/48 slot",
+      "message": "Bütçe uygun olduğunda Pierre'in tezgâhından 50.000g'ye 48 slotluk son çantayı alabilirsin.",
+      "allOf": ["mod:spacechase0.BiggerBackpack", "maxBagSlots < 48"]
+    },
+    {
+      "id": "strat_bigger_backpack_budget",
+      "enabled": true,
+      "target": "strategic",
+      "priority": 20,
+      "minBudget": 50000,
+      "showAsFutureGoal": true,
+      "message": "Büyük Sırt Çantası (50.000g): Şu an {maxBagSlots}/48 slot kullanıyorsun — öncelikli bina/hayvan harcamalarını yaptıktan sonra Pierre'den 48 slotluk çantayı açabilirsin.",
+      "allOf": ["mod:spacechase0.BiggerBackpack", "maxBagSlots < 48"]
+    },
+    {
+      "id": "strat_hoe_upgrade",
+      "enabled": true,
+      "target": "strategic",
+      "priority": 25,
+      "minBudget": 2000,
+      "showAsFutureGoal": true,
+      "message": "Çapa Yükseltmesi (Şu an Başlangıç Lv.0): Kış gelmeden Bakır/Çelik seviyesine yükseltmek hem kazı noktaları hem mevsim başı ekim hızını ciddi artırır.",
+      "allOf": ["hoeLevel == 0"]
+    },
+    {
+      "id": "strat_house_lv0",
+      "enabled": true,
+      "target": "strategic",
+      "priority": 30,
+      "minBudget": 10000,
+      "showAsFutureGoal": true,
+      "message": "Çiftlik Evi 1. Yükseltme (Mutfak): Robin'de 10.000g + 450 Odun ile Mutfak açmak madencilik/balıkçılık yemek buff'larını ve tarif koleksiyonunu açar.",
+      "allOf": ["houseLevel == 0"]
+    },
+    {
+      "id": "strat_house_lv1",
+      "enabled": true,
+      "target": "strategic",
+      "priority": 31,
+      "minBudget": 65000,
+      "showAsFutureGoal": true,
+      "message": "Çiftlik Evi 2. Yükseltme (Çocuk Odası — 65.000g + 100 Kereste): Acil değil; ileride Mahzen (Yıllandırma Varili) kilidi için gereken ara aşamadır.",
+      "allOf": ["houseLevel == 1"]
+    },
+    {
+      "id": "strat_house_lv2",
+      "enabled": true,
+      "target": "strategic",
+      "priority": 32,
+      "minBudget": 100000,
+      "showAsFutureGoal": true,
+      "message": "Çiftlik Evi 3. Yükseltme (Mahzen — 100.000g): Şarap ve peynirleri İridyum kaliteye yıllandıran Yıllandırma Varili alanını açar.",
+      "allOf": ["houseLevel == 2"]
+    },
+    {
+      "id": "strat_keg_tapper",
+      "enabled": true,
+      "target": "strategic",
+      "priority": 40,
+      "message": "Fıçı ve Meşe Reçinesi Ölçekleme (Şu an {kegCount} Fıçı, {tapperCount} Akıtıcı, sandıkta {oakResinCount} Meşe Reçinesi): Meşe ağaçlarına daha fazla Akıtıcı takmak Sera + Eski Meyve/Yıldızmeyvesi/Şerbetçi Otu gelirini katlar.",
+      "allOf": ["kegCount < 25"]
+    },
+    {
+      "id": "strat_coal_bottleneck",
+      "enabled": true,
+      "target": "strategic",
+      "priority": 45,
+      "message": "Kömür ve Maden Darboğazı: Sandıkta {totalOres} cevher birikmiş ama yalnızca {coalCount} Kömür var! Maden 40–79. katlarda Toz Tayfı kesmek hem Kömür sağlar hem de Hırsız Yüzüğü hedefine yaklaştırır.",
+      "allOf": ["totalOres >= 100", "coalCount < 25"]
+    },
+    {
+      "id": "strat_crystalarium_elevator",
+      "enabled": true,
+      "target": "strategic",
+      "priority": 50,
+      "message": "Kristalaryum & Kafatası Mağarası (Asansör Modlu, en derin kat: {skullCavernFloor}): Asansör modun olduğu için Yeşim'den 100 merdiven kasmana gerek yok; Kristalaryum'da Elmas veya Yakut (Baharatlı Yılanbalığı takası) çoğaltmak daha verimli!",
+      "allOf": ["crystalariumCount >= 1", "mod:SkullCavernElevator"]
+    },
+    {
+      "id": "strat_crystalarium_vanilla",
+      "enabled": true,
+      "target": "strategic",
+      "priority": 50,
+      "message": "Kristalaryum & Kafatası Mağarası (Şu an {crystalariumCount} Kristalaryum, sandıkta {jadeCount} Yeşim): Yeşim çoğaltıp Pazar günleri Patisko Çölü Tüccarı'ndan 1:1 Merdiven takaslamak 100+ kata inmeyi kolaylaştırır.",
+      "allOf": ["crystalariumCount >= 1", "!mod:SkullCavernElevator"]
+    },
+    {
+      "id": "strat_mastery_prep",
+      "enabled": true,
+      "target": "strategic",
+      "priority": 60,
+      "message": "Ustalık (Mastery) & İleri Oyun Hazırlığı: Birden fazla becerin Sv.9–10 bandında; tüm ana 5 beceriyi Sv.10'a ulaştırmak Kömürözü Ormanı'ndaki Ustalık Mağarası'nı açar.",
+      "allOf": ["ccAvailable", "skillsNear10 >= 2"]
+    }
+  ]
+}

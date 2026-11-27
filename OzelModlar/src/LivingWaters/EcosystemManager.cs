@@ -240,16 +240,18 @@ internal sealed class EcosystemManager
     };
 
     private readonly IMonitor Monitor;
+    private readonly EcosystemLogger AuditLog;
     private Func<ModConfig> GetConfig;
     private WaterEcosystemSaveData State = new();
     private readonly HashSet<string> ProtectedFishIds = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> BossFishIds = new(StringComparer.OrdinalIgnoreCase);
     private bool CachesDirty = true;
 
-    public EcosystemManager(IMonitor monitor, Func<ModConfig> getConfig)
+    public EcosystemManager(IMonitor monitor, Func<ModConfig> getConfig, EcosystemLogger auditLog)
     {
         this.Monitor = monitor;
         this.GetConfig = getConfig;
+        this.AuditLog = auditLog;
     }
 
     public void LoadState(WaterEcosystemSaveData? saved)
@@ -328,7 +330,10 @@ internal sealed class EcosystemManager
                     ?? waterMap.Bodies.OrderByDescending(b => b.Tiles.Count).First();
 
                 if (!this.State.Zones.ContainsKey(targetBody.ZoneKey))
+                {
                     this.State.Zones[targetBody.ZoneKey] = oldZone;
+                    this.AuditLog.Record("SCHEMA_MIGRATE", $"Legacy '{oldKey}' -> '{targetBody.ZoneKey}' ({FormatSpeciesSummary(oldZone)})");
+                }
             }
 
             this.State.SchemaVersion = 2;
@@ -351,8 +356,11 @@ internal sealed class EcosystemManager
                         && h.TotalMigratedIn == 0
                         && h.TotalBorn == 0)
                     {
+                        int prev = zone.SpeciesCounts[qid];
                         zone.SpeciesCounts.Remove(qid);
                         zone.SpeciesDetails.Remove(qid);
+                        if (prev > 0)
+                            this.AuditLog.Record("CLEANUP", $"EmptyFarmStart removed {qid} ({prev}->0) in {zoneKey}");
                     }
                 }
             }
@@ -362,9 +370,58 @@ internal sealed class EcosystemManager
         {
             this.RebalanceAllZonesForWaterSize();
             this.State.SchemaVersion = 3;
+            this.AuditLog.Record("SCHEMA_MIGRATE", $"Upgraded SchemaVersion -> 3 after RebalanceAllZonesForWaterSize");
         }
 
         this.CachesDirty = true;
+        if (Context.IsWorldReady)
+        {
+            this.AuditLog.Record("LOAD", $"{this.AuditLog.GetHeaderTag()} Schema={this.State.SchemaVersion} Zones={this.State.Zones.Count} EmptyFarmStart={cfg.EmptyFarmStart}", markDirty: false);
+            this.LogFarmAndStockedSummary("LOAD_INVENTORY", markDirty: false);
+            this.AuditLog.Flush();
+        }
+    }
+
+    public void RecordSaveSnapshot()
+    {
+        if (!this.AuditLog.ConsumeDirtyFlag())
+            return;
+
+        this.AuditLog.Record("SAVE", $"Schema={this.State.SchemaVersion} LastDay={this.State.LastProcessedTotalDays}", markDirty: false);
+        this.LogFarmAndStockedSummary("SAVE_INVENTORY", markDirty: false);
+        this.AuditLog.Flush();
+    }
+
+    private void LogFarmAndStockedSummary(string category, bool markDirty)
+    {
+        foreach (var kv in this.State.Zones.OrderBy(k => k.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            bool isFarm = GetLocationNameFromZoneKey(kv.Key).Equals("Farm", StringComparison.OrdinalIgnoreCase);
+            if (!isFarm && kv.Value.PlayerStockedSpecies.Count == 0)
+                continue;
+
+            int total = kv.Value.SpeciesCounts.Values.Where(v => v > 0).Sum();
+            if (total == 0 && kv.Value.PlayerStockedSpecies.Count == 0)
+                continue;
+
+            this.AuditLog.Record(category, $"{kv.Key}: total={total} [{FormatSpeciesSummary(kv.Value)}]", markDirty);
+        }
+    }
+
+    private static string FormatSpeciesSummary(ZonePopulation zone)
+    {
+        var items = zone.SpeciesCounts
+            .Where(kv => kv.Value > 0)
+            .OrderByDescending(kv => kv.Value)
+            .Select(kv =>
+            {
+                string tag = zone.PlayerStockedSpecies.Contains(kv.Key)
+                    ? "S"
+                    : (zone.SpeciesDetails.TryGetValue(kv.Key, out var h) && h.Origin == "Migration" ? "M" : "N");
+                string name = ItemRegistry.GetData(kv.Key)?.DisplayName ?? kv.Key;
+                return $"{name}({kv.Key})={kv.Value}[{tag}]";
+            });
+        return string.Join(", ", items);
     }
 
     private void RebalanceAllZonesForWaterSize()
@@ -387,7 +444,11 @@ internal sealed class EcosystemManager
                 if (zone.PlayerStockedSpecies.Contains(qid))
                 {
                     if (zone.SpeciesCounts[qid] > profile.MaxPerSpecies)
+                    {
+                        int prev = zone.SpeciesCounts[qid];
                         zone.SpeciesCounts[qid] = profile.MaxPerSpecies;
+                        this.AuditLog.Record("CLEANUP", $"Rebalance capped stocked {qid} ({prev}->{profile.MaxPerSpecies}) in {zoneKey}");
+                    }
                     continue;
                 }
 
@@ -396,8 +457,10 @@ internal sealed class EcosystemManager
                 {
                     if (!allowedNatural.Contains(qid))
                     {
+                        int prev = zone.SpeciesCounts[qid];
                         zone.SpeciesCounts.Remove(qid);
                         zone.SpeciesDetails.Remove(qid);
+                        this.AuditLog.Record("CLEANUP", $"Rebalance removed out-of-season natural {qid} ({prev}->0) in {zoneKey}");
                         continue;
                     }
 
@@ -1056,6 +1119,8 @@ internal sealed class EcosystemManager
         }
         hist.TotalReleased++;
 
+        this.AuditLog.RecordImmediate("RELEASE", $"{displayName} ({qid}) -> {zoneKey} ({cur}->{next})");
+
         string locLabel = GetDisplayLocationName(zoneKey);
         string breedHint = next == 1
             ? " (Üremesi için aynı türden 1 tane daha sal!)"
@@ -1082,7 +1147,10 @@ internal sealed class EcosystemManager
             && !string.Equals(this.State.LastSeason, Game1.currentSeason, StringComparison.OrdinalIgnoreCase);
 
         int stockedBirths = 0;
-        int totalMigrations = 0;
+        var farmBirthZones = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        int farmMigrationsIn = 0;
+        var farmMigrationZones = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        int valleyMigrations = 0;
 
         foreach (var kv in this.State.Zones.ToList())
         {
@@ -1101,6 +1169,8 @@ internal sealed class EcosystemManager
 
             if (isSeasonChanged || !string.Equals(zone.LastSeasonInitialized, Game1.currentSeason, StringComparison.OrdinalIgnoreCase))
                 this.ReplenishNaturalZone(loc, zoneKey, zone);
+            else if (this.SyncedZonesThisSession.Add(zoneKey))
+                this.SyncMissingNaturalSpecies(loc, zoneKey, zone);
 
             var profile = this.GetWaterCapacityProfile(loc, zoneKey);
             int totalInZone = zone.SpeciesCounts.Values.Sum();
@@ -1144,7 +1214,11 @@ internal sealed class EcosystemManager
                             hist.FirstSeenTotalDays = today;
 
                         if (isFarm || zone.PlayerStockedSpecies.Contains(qid))
+                        {
                             stockedBirths += actual;
+                            farmBirthZones[zoneKey] = farmBirthZones.GetValueOrDefault(zoneKey, 0) + actual;
+                            this.AuditLog.Record("BREED", $"{qid} in {zoneKey}: +{actual} ({count}->{updated})");
+                        }
                     }
                 }
             }
@@ -1175,7 +1249,10 @@ internal sealed class EcosystemManager
                 foreach (string qid in srcZone.SpeciesCounts.Keys.ToList())
                 {
                     int srcCount = srcZone.SpeciesCounts[qid];
-                    if (srcCount < srcProfile.MigrationThreshold)
+                    int effectiveThreshold = srcZone.PlayerStockedSpecies.Contains(qid)
+                        ? Math.Max(srcProfile.MigrationThreshold, Math.Max(12, srcProfile.QualityBonusThreshold + 2))
+                        : srcProfile.MigrationThreshold;
+                    if (srcCount < effectiveThreshold)
                         continue;
 
                     if (Game1.random.NextDouble() >= migChance)
@@ -1224,20 +1301,71 @@ internal sealed class EcosystemManager
                         tgtHist.SourceLocation = srcLocName;
                     }
 
-                    totalMigrations++;
+                    this.AuditLog.Record("MIGRATION", $"{qid}: {srcKey} ({srcCount}->{srcCount - 1}) -> {targetZoneKey} ({curTarget}->{curTarget + 1})");
+
+                    if (targetLoc is Farm)
+                    {
+                        farmMigrationsIn++;
+                        farmMigrationZones.Add(targetZoneKey);
+                    }
+                    else
+                    {
+                        valleyMigrations++;
+                    }
                 }
             }
         }
 
         this.State.LastProcessedTotalDays = today;
         this.State.LastSeason = Game1.currentSeason;
+        this.AuditLog.Flush();
 
-        if (stockedBirths > 0)
+        if (stockedBirths > 0 || farmMigrationsIn > 0)
         {
-            morningToast = totalMigrations > 0
-                ? $"Canlı Sular: Sularınızda gece {stockedBirths} yeni balık üredi, {totalMigrations} balık göç etti!"
-                : $"Canlı Sular: Sularınızda gece {stockedBirths} yeni balık üredi!";
+            var parts = new List<string>();
+            if (stockedBirths > 0)
+            {
+                string birthPlace = farmBirthZones.Count switch
+                {
+                    1 => GetDisplayLocationName(farmBirthZones.Keys.First()),
+                    > 1 => $"{farmBirthZones.Count} sulama/gölet noktanızda",
+                    _ => "sularınızda"
+                };
+                parts.Add($"{birthPlace} gece {stockedBirths} yeni balık üredi");
+            }
+
+            if (farmMigrationsIn > 0)
+            {
+                string migTarget = farmMigrationZones.Count == 1
+                    ? GetDisplayLocationName(farmMigrationZones.First())
+                    : "çiftlik akarsularına";
+                parts.Add($"{migTarget} {farmMigrationsIn} balık göç etti");
+            }
+            else if (valleyMigrations > 0)
+            {
+                parts.Add($"vadi genelinde {valleyMigrations} göç oldu");
+            }
+
+            morningToast = $"Canlı Sular: {string.Join(", ", parts)}!";
         }
+    }
+
+    private List<(string Qid, int Count)> GetCatchableInhabitants(GameLocation loc, ZonePopulation zone, ModConfig cfg)
+    {
+        return zone.SpeciesCounts
+            .Where(kv => kv.Value > 0
+                && this.IsValidSwimmingFish(kv.Key)
+                && ((loc is Farm && cfg.FarmAllowsAllSeasons) || this.IsFishInSeasonForZone(loc.Name, kv.Key)))
+            .Select(kv => (Qid: kv.Key, Count: kv.Value))
+            .ToList();
+    }
+
+    private Item PickAndApplyBonus(ZonePopulation zone, List<(string Qid, int Count)> candidates, WaterCapacityProfile profile)
+    {
+        string picked = PickWeighted(candidates);
+        Item created = ItemRegistry.Create(picked);
+        this.ApplyPopulationQualityBonus(zone, picked, created, profile);
+        return created;
     }
 
     public Item? ModifyGetFishResult(GameLocation loc, Vector2 bobberTile, Farmer? who, Item? originalResult)
@@ -1255,30 +1383,25 @@ internal sealed class EcosystemManager
             return originalResult;
 
         var profile = this.GetWaterCapacityProfile(loc, zoneKey);
+        var residentCandidates = this.GetCatchableInhabitants(loc, zone, cfg);
 
-        // 1. If player stocked fish here (or wild migrants arrived on Farm), let them bite & appear in VisibleFish
-        var stockedCandidates = zone.SpeciesCounts
-            .Where(kv => kv.Value > 0
-                && this.IsValidSwimmingFish(kv.Key)
-                && (zone.PlayerStockedSpecies.Contains(kv.Key)
-                    || (loc is Farm && !this.IsNativeToLocation(loc.Name, kv.Key)))
-                && ((loc is Farm && cfg.FarmAllowsAllSeasons) || this.IsFishInSeasonForZone(loc.Name, kv.Key)))
-            .Select(kv => (Qid: kv.Key, Count: kv.Value))
+        // 1. Stocked / migrated / Farm inhabitants can bite & replace vanilla trash or common catches
+        var stockedOrMigratedCandidates = residentCandidates
+            .Where(c => loc is Farm
+                || zone.PlayerStockedSpecies.Contains(c.Qid)
+                || (zone.SpeciesDetails.TryGetValue(c.Qid, out var h) && h.Origin == "Migration")
+                || !this.IsNativeToLocation(loc.Name, c.Qid))
             .ToList();
 
-        if (stockedCandidates.Count > 0)
+        if (stockedOrMigratedCandidates.Count > 0)
         {
-            int stockedTotal = stockedCandidates.Sum(x => x.Count);
+            int stockedTotal = stockedOrMigratedCandidates.Sum(x => x.Count);
             bool vanillaIsTrashOrEmpty = originalResult is null || originalResult.Category == StardewValley.Object.junkCategory;
             double stockedRatio = Math.Min(0.75, stockedTotal / (stockedTotal + 8.0));
 
             if (vanillaIsTrashOrEmpty && Game1.random.NextDouble() < Math.Min(0.85, stockedRatio + 0.15))
-            {
-                string picked = PickWeighted(stockedCandidates);
-                Item created = ItemRegistry.Create(picked);
-                this.ApplyPopulationQualityBonus(zone, picked, created, profile);
-                return created;
-            }
+                return this.PickAndApplyBonus(zone, stockedOrMigratedCandidates, profile);
+
             if (originalResult is not null && originalResult.Category == StardewValley.Object.FishCategory)
             {
                 string preCheckQid = NormalizeItemId(originalResult.QualifiedItemId);
@@ -1286,15 +1409,12 @@ internal sealed class EcosystemManager
                     && !this.IsProtectedFish(player, preCheckQid)
                     && Game1.random.NextDouble() < stockedRatio * 0.65)
                 {
-                    string picked = PickWeighted(stockedCandidates);
-                    Item created = ItemRegistry.Create(picked);
-                    this.ApplyPopulationQualityBonus(zone, picked, created, profile);
-                    return created;
+                    return this.PickAndApplyBonus(zone, stockedOrMigratedCandidates, profile);
                 }
             }
         }
 
-        // 2. Natural population weighting (never suppresses protected CC / uncaught / quest fish)
+        // 2. Natural / empty-water enforcement: keep F6, VisibleFish, and actual rod catches strictly consistent
         if (originalResult is null || originalResult.Category != StardewValley.Object.FishCategory)
             return originalResult;
 
@@ -1302,66 +1422,40 @@ internal sealed class EcosystemManager
         if (!this.IsValidSwimmingFish(origQid))
             return originalResult;
 
-        // If Farm starts empty, keep Farm hook strictly synced to stocked/migrated species in F6
-        if (loc is Farm
-            && cfg.EmptyFarmStart
-            && zone.SpeciesCounts.GetValueOrDefault(origQid, 0) <= 0
-            && !this.IsBossOrLegendaryFish(origQid)
-            && !this.IsProtectedFish(player, origQid))
-        {
-            if (stockedCandidates.Count > 0)
-            {
-                string picked = PickWeighted(stockedCandidates);
-                Item created = ItemRegistry.Create(picked);
-                this.ApplyPopulationQualityBonus(zone, picked, created, profile);
-                return created;
-            }
+        // If this water body currently has NO active swimming fish at all (F6 = 0, VisibleFish = 0),
+        // rod fishing must never conjure wild/protected fish out of empty water.
+        if (residentCandidates.Count == 0)
             return ItemRegistry.Create("(O)168");
-        }
 
-        // Keep catches in small ponds aligned with the species that actually inhabit that water body
+        bool origIsActiveInZone = zone.SpeciesCounts.GetValueOrDefault(origQid, 0) > 0
+            && ((loc is Farm && cfg.FarmAllowsAllSeasons) || this.IsFishInSeasonForZone(loc.Name, origQid));
+
+        // On Farm with EmptyFarmStart, catches must strictly come from inhabited/stocked/migrated species (no phantom vanilla Farm fish)
+        if (loc is Farm && cfg.EmptyFarmStart && !origIsActiveInZone)
+            return this.PickAndApplyBonus(zone, residentCandidates, profile);
+
+        // Keep catches in small closed ponds aligned with the species that actually live in that water body
         WaterBodyInfo? catchBody = GetWaterBodyByZoneKey(loc, zoneKey);
         bool isSmallClosedPond = catchBody is not null && !catchBody.TouchesMapEdge && catchBody.Tiles.Count <= 120;
         if (isSmallClosedPond
-            && zone.SpeciesCounts.GetValueOrDefault(origQid, 0) <= 0
+            && !origIsActiveInZone
+            && (loc is Farm || zone.SpeciesDetails.ContainsKey(origQid))
             && !this.IsBossOrLegendaryFish(origQid)
             && !this.IsProtectedFish(player, origQid))
         {
-            var residentSpecies = zone.SpeciesCounts
-                .Where(kv => kv.Value > 0
-                    && this.IsValidSwimmingFish(kv.Key)
-                    && ((loc is Farm && cfg.FarmAllowsAllSeasons) || this.IsFishInSeasonForZone(loc.Name, kv.Key)))
-                .Select(kv => (Qid: kv.Key, Count: kv.Value))
-                .ToList();
-
-            if (residentSpecies.Count > 0)
-            {
-                string picked = PickWeighted(residentSpecies);
-                Item created = ItemRegistry.Create(picked);
-                this.ApplyPopulationQualityBonus(zone, picked, created, profile);
-                return created;
-            }
+            return this.PickAndApplyBonus(zone, residentCandidates, profile);
         }
 
         if (!this.IsProtectedFish(player, origQid)
             && zone.SpeciesCounts.TryGetValue(origQid, out int origCount)
             && origCount <= profile.MinFloorPerSpecies)
         {
-            var abundant = zone.SpeciesCounts
-                .Where(kv => kv.Value >= profile.BasePerSpecies
-                    && kv.Key != origQid
-                    && this.IsValidSwimmingFish(kv.Key)
-                    && this.IsFishInSeasonForZone(loc.Name, kv.Key))
-                .Select(kv => (Qid: kv.Key, Count: kv.Value))
+            var abundant = residentCandidates
+                .Where(c => c.Count >= profile.BasePerSpecies && c.Qid != origQid)
                 .ToList();
 
             if (abundant.Count > 0 && Game1.random.NextDouble() < 0.35)
-            {
-                string replacement = PickWeighted(abundant);
-                Item swapped = ItemRegistry.Create(replacement);
-                this.ApplyPopulationQualityBonus(zone, replacement, swapped, profile);
-                return swapped;
-            }
+                return this.PickAndApplyBonus(zone, abundant, profile);
         }
 
         this.ApplyPopulationQualityBonus(zone, origQid, originalResult, profile);
@@ -1401,6 +1495,9 @@ internal sealed class EcosystemManager
 
         int next = Math.Max(floor, cur - numCaught);
         zone.SpeciesCounts[qid] = next;
+
+        if (loc is Farm || zone.PlayerStockedSpecies.Contains(qid) || catchHist.Origin == "Migration")
+            this.AuditLog.RecordImmediate("CATCH", $"{qid} in {zoneKey}: -{numCaught} ({cur}->{next})");
 
         if (zone.PlayerStockedSpecies.Contains(qid) && next <= 2 && cur > 2)
         {
@@ -1448,33 +1545,76 @@ internal sealed class EcosystemManager
 
     private readonly HashSet<string> SyncedZonesThisSession = new(StringComparer.OrdinalIgnoreCase);
 
+    private static int ComputeSeedTarget(WaterCapacityProfile profile, int speciesCount)
+    {
+        int baseTarget = Math.Min(profile.BasePerSpecies, profile.MaxPerSpecies);
+        if (speciesCount <= 0)
+            return baseTarget;
+
+        int perSpeciesBudget = Math.Max(1, profile.MaxTotalFish / speciesCount);
+        return Math.Clamp(perSpeciesBudget, Math.Min(profile.MinFloorPerSpecies, baseTarget), baseTarget);
+    }
+
     private void SyncMissingNaturalSpecies(GameLocation loc, string zoneKey, ZonePopulation zone)
     {
         var profile = this.GetWaterCapacityProfile(loc, zoneKey);
         var naturalIds = this.GetNaturalSeasonalFishForZone(loc, zoneKey);
+        var missingIds = naturalIds
+            .Where(qid => !zone.SpeciesDetails.ContainsKey(qid) && zone.SpeciesCounts.GetValueOrDefault(qid, 0) == 0)
+            .ToList();
+        if (missingIds.Count == 0)
+            return;
+
+        int target = ComputeSeedTarget(profile, naturalIds.Count);
         int totalInZone = zone.SpeciesCounts.Values.Sum();
-        int target = Math.Min(profile.BasePerSpecies, profile.MaxPerSpecies);
+        int neededRoom = missingIds.Count * target;
 
-        foreach (string qid in naturalIds)
+        if (totalInZone + neededRoom > profile.MaxTotalFish)
         {
-            if (zone.SpeciesDetails.ContainsKey(qid))
-                continue;
+            int excessNeeded = (totalInZone + neededRoom) - profile.MaxTotalFish;
+            int trimFloor = Math.Max(profile.MinFloorPerSpecies, target);
+            var trimCandidates = zone.SpeciesCounts
+                .Where(kv => !zone.PlayerStockedSpecies.Contains(kv.Key) && kv.Value > trimFloor)
+                .OrderByDescending(kv => kv.Value)
+                .Select(kv => kv.Key)
+                .ToList();
 
-            int cur = zone.SpeciesCounts.GetValueOrDefault(qid, 0);
-            if (cur == 0 && totalInZone < profile.MaxTotalFish)
+            while (excessNeeded > 0 && trimCandidates.Count > 0)
             {
-                int add = Math.Min(target, profile.MaxTotalFish - totalInZone);
-                if (add > 0)
+                bool reducedAny = false;
+                for (int i = trimCandidates.Count - 1; i >= 0 && excessNeeded > 0; i--)
                 {
-                    zone.SpeciesCounts[qid] = add;
-                    totalInZone += add;
-                    zone.SpeciesDetails[qid] = new SpeciesHistory
+                    string key = trimCandidates[i];
+                    int val = zone.SpeciesCounts.GetValueOrDefault(key, 0);
+                    if (val > trimFloor)
                     {
-                        Origin = "Natural",
-                        FirstSeenTotalDays = Context.IsWorldReady ? Game1.Date.TotalDays : -1
-                    };
+                        zone.SpeciesCounts[key] = val - 1;
+                        totalInZone--;
+                        excessNeeded--;
+                        reducedAny = true;
+                    }
+                    else
+                    {
+                        trimCandidates.RemoveAt(i);
+                    }
                 }
+
+                if (!reducedAny)
+                    break;
             }
+        }
+
+        foreach (string qid in missingIds)
+        {
+            int room = profile.MaxTotalFish - totalInZone;
+            int add = room > 0 ? Math.Min(target, room) : 1;
+            zone.SpeciesCounts[qid] = add;
+            totalInZone += add;
+            zone.SpeciesDetails[qid] = new SpeciesHistory
+            {
+                Origin = "Natural",
+                FirstSeenTotalDays = Context.IsWorldReady ? Game1.Date.TotalDays : -1
+            };
         }
     }
 
@@ -1484,27 +1624,35 @@ internal sealed class EcosystemManager
         var naturalIds = this.GetNaturalSeasonalFishForZone(loc, zoneKey);
         var naturalSet = new HashSet<string>(naturalIds, StringComparer.OrdinalIgnoreCase);
 
+        var cfg = this.GetConfig();
+
         // Clear out-of-season non-stocked fish when seasons change so small ponds don't accumulate every season's species
         foreach (string existingQid in zone.SpeciesCounts.Keys.ToList())
         {
             if (zone.PlayerStockedSpecies.Contains(existingQid))
                 continue;
+            if (loc is Farm && cfg.FarmAllowsAllSeasons)
+                continue;
 
             if (!naturalSet.Contains(existingQid) && !this.IsFishInSeasonForZone(loc.Name, existingQid))
             {
+                int prev = zone.SpeciesCounts[existingQid];
                 zone.SpeciesCounts.Remove(existingQid);
                 zone.SpeciesDetails.Remove(existingQid);
+                if (loc is Farm || prev > 0)
+                    this.AuditLog.Record("CLEANUP", $"Seasonal clear {existingQid} ({prev}->0) in {zoneKey}");
             }
         }
 
+        int target = ComputeSeedTarget(profile, naturalIds.Count);
         int totalInZone = zone.SpeciesCounts.Values.Sum();
         foreach (string qid in naturalIds)
         {
             int cur = zone.SpeciesCounts.GetValueOrDefault(qid, 0);
-            int target = Math.Min(profile.BasePerSpecies, profile.MaxPerSpecies);
-            if (cur < target && totalInZone < profile.MaxTotalFish)
+            if (cur < target)
             {
-                int add = Math.Min(target - cur, profile.MaxTotalFish - totalInZone);
+                int room = profile.MaxTotalFish - totalInZone;
+                int add = room > 0 ? Math.Min(target - cur, room) : (cur == 0 ? 1 : 0);
                 if (add > 0)
                 {
                     zone.SpeciesCounts[qid] = cur + add;
@@ -1597,7 +1745,7 @@ internal sealed class EcosystemManager
                     string qid = NormalizeItemId(id);
                     if (!this.IsValidSwimmingFish(qid))
                         return;
-                    if (spawn.Season is null && !HasExplicitSeasonCondition(spawn.Condition) && !this.IsFishInDataFishSeason(qid))
+                    if (spawn.Season is null && !HasExplicitSeasonCondition(spawn.Condition) && !spawn.IgnoreFishDataRequirements && !this.IsFishInDataFishSeason(qid))
                         return;
                     result.Add(qid);
                 }
@@ -1615,84 +1763,7 @@ internal sealed class EcosystemManager
             this.Monitor.Log($"Failed to sample natural fish for {zoneKey}: {ex.Message}", LogLevel.Trace);
         }
 
-        var candidates = result.ToList();
-        var profile = this.GetWaterCapacityProfile(loc, zoneKey);
-        if (candidates.Count <= profile.MaxNaturalSpecies)
-            return candidates;
-
-        return this.SelectNaturalSpeciesForBody(zoneKey, body, candidates, profile.MaxNaturalSpecies);
-    }
-
-    private List<string> SelectNaturalSpeciesForBody(string zoneKey, WaterBodyInfo? body, List<string> candidates, int limit)
-    {
-        var fishData = DataLoader.Fish(Game1.content);
-        int tiles = body?.Tiles.Count ?? 60;
-        bool open = body?.TouchesMapEdge ?? false;
-
-        double diffWeight;
-        double sizeWeight;
-        double jitterRange;
-
-        if (!open && tiles <= 40)
-        {
-            diffWeight = 0.85;
-            sizeWeight = 0.50;
-            jitterRange = 32.0;
-        }
-        else if ((!open && tiles <= 120) || (open && tiles <= 50))
-        {
-            diffWeight = 0.35;
-            sizeWeight = 0.25;
-            jitterRange = 55.0;
-        }
-        else
-        {
-            diffWeight = 0.10;
-            sizeWeight = 0.05;
-            jitterRange = 100.0;
-        }
-
-        return candidates
-            .OrderBy(qid =>
-            {
-                int difficulty = 45;
-                int maxSize = 24;
-                string rawKey = qid.StartsWith("(O)", StringComparison.Ordinal) ? qid[3..] : qid;
-                if (fishData.TryGetValue(rawKey, out string? row) || fishData.TryGetValue(qid, out row))
-                {
-                    string[] parts = row.Split('/');
-                    if (parts.Length > 1 && int.TryParse(parts[1], out int parsedDiff))
-                        difficulty = parsedDiff;
-                    if (parts.Length > 4 && int.TryParse(parts[4], out int parsedMaxSize))
-                        maxSize = parsedMaxSize;
-                }
-
-                double jitter = ComputeDeterministicUnit(zoneKey, qid) * jitterRange;
-                return difficulty * diffWeight + maxSize * sizeWeight + jitter;
-            })
-            .Take(Math.Max(1, limit))
-            .ToList();
-    }
-
-    private static double ComputeDeterministicUnit(string zoneKey, string qid)
-    {
-        unchecked
-        {
-            uint hash = 2166136261u;
-            foreach (char ch in zoneKey)
-            {
-                hash ^= char.ToLowerInvariant(ch);
-                hash *= 16777619u;
-            }
-            hash ^= '|';
-            hash *= 16777619u;
-            foreach (char ch in qid)
-            {
-                hash ^= char.ToLowerInvariant(ch);
-                hash *= 16777619u;
-            }
-            return (hash % 10000u) / 10000.0;
-        }
+        return result.ToList();
     }
 
     private bool IsNativeToLocation(string locName, string qid)
@@ -1747,7 +1818,7 @@ internal sealed class EcosystemManager
                         if (IsSpawnConditionSeasonMatch(spawn.Condition))
                             return true;
                     }
-                    else if (this.IsFishInDataFishSeason(qid))
+                    else if (spawn.IgnoreFishDataRequirements || this.IsFishInDataFishSeason(qid))
                     {
                         return true;
                     }
@@ -1769,15 +1840,19 @@ internal sealed class EcosystemManager
         if (openBodies.Count == 0)
             return null;
 
-        var openKeys = new HashSet<string>(openBodies.Select(b => b.ZoneKey), StringComparer.OrdinalIgnoreCase);
+        // Distribute migrants across open waterways that still have capacity instead of always picking one zone
+        var withRoom = openBodies
+            .Where(b =>
+            {
+                if (!this.State.Zones.TryGetValue(b.ZoneKey, out var existing))
+                    return true;
+                var prof = this.GetWaterCapacityProfile(targetLoc, b.ZoneKey);
+                return existing.SpeciesCounts.Values.Sum() < prof.MaxTotalFish;
+            })
+            .ToList();
 
-        string? existingOpen = this.State.Zones
-            .Where(kv => openKeys.Contains(kv.Key))
-            .OrderByDescending(kv => kv.Value.PlayerStockedSpecies.Count > 0)
-            .Select(kv => kv.Key)
-            .FirstOrDefault();
-
-        string key = existingOpen ?? openBodies.OrderByDescending(b => b.Tiles.Count).First().ZoneKey;
+        var pool = withRoom.Count > 0 ? withRoom : openBodies;
+        string key = pool[Game1.random.Next(pool.Count)].ZoneKey;
         var resolved = this.EnsureZoneInitialized(targetLoc, key);
         return resolved is not null ? (key, resolved) : null;
     }
